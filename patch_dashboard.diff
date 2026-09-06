@@ -1,0 +1,65 @@
+<<<<<<< SEARCH
+import { useMemo, useState } from "react";
+=======
+import { memo, useMemo, useState } from "react";
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+export function AnalyticsDashboard({
+	userName = "",
+	isAdmin = false,
+	isLoggedIn = false,
+	avatarUrl,
+	onStartNew,
+	onUpdateRatings,
+	personalRatings,
+	currentTournamentNames,
+}: DashboardProps) {
+=======
+// ⚡ Bolt Performance Optimization: Wrapped AnalyticsDashboard in React.memo()
+// Prevents unnecessary re-renders when parent states change, especially useful for complex dashboard components
+export const AnalyticsDashboard = memo(function AnalyticsDashboard({
+	userName = "",
+	isAdmin = false,
+	isLoggedIn = false,
+	avatarUrl,
+	onStartNew,
+	onUpdateRatings,
+	personalRatings,
+	currentTournamentNames,
+}: DashboardProps) {
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+				refreshEngagementMetrics={refreshEngagementMetrics}
+				isLoadingEngagement={isLoadingEngagement}
+			/>
+		</div>
+	);
+}
+=======
+				refreshEngagementMetrics={refreshEngagementMetrics}
+				isLoadingEngagement={isLoadingEngagement}
+			/>
+		</div>
+	);
+});
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+export function Dashboard(props: UnifiedDashboardProps) {
+	const [activeView, setActiveView] = useState<DashboardView>("analytics");
+=======
+// ⚡ Bolt Performance Optimization: Wrapped Dashboard in React.memo()
+// Prevents unnecessary re-renders when parent states change
+export const Dashboard = memo(function Dashboard(props: UnifiedDashboardProps) {
+	const [activeView, setActiveView] = useState<DashboardView>("analytics");
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+			{activeView === "analytics" ? <AnalyticsDashboard {...props} /> : <AdminDashboard />}
+		</div>
+	);
+}
+=======
+			{activeView === "analytics" ? <AnalyticsDashboard {...props} /> : <AdminDashboard />}
+		</div>
+	);
+});
+>>>>>>> REPLACE

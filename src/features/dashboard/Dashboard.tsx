@@ -1,5 +1,5 @@
 import { BarChart3, Settings, Trophy } from "lucide-react";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { ContextBadge, Panel, SectionHeader } from "./components/Common";
 import {
@@ -15,7 +15,9 @@ import type { DashboardProps } from "./types";
 
 export type DashboardView = "analytics" | "admin";
 
-export function AnalyticsDashboard({
+// ⚡ Bolt Performance Optimization: Wrapped AnalyticsDashboard in React.memo()
+// Prevents unnecessary re-renders when parent states change, especially useful for complex dashboard components
+export const AnalyticsDashboard = memo(function AnalyticsDashboard({
 	userName = "",
 	isAdmin = false,
 	isLoggedIn = false,
@@ -91,7 +93,7 @@ export function AnalyticsDashboard({
 			/>
 		</div>
 	);
-}
+});
 
 const DASHBOARD_VIEW_OPTIONS = [
 	{
@@ -110,7 +112,9 @@ export interface UnifiedDashboardProps extends DashboardProps {
 	isAdmin?: boolean;
 }
 
-export function Dashboard(props: UnifiedDashboardProps) {
+// ⚡ Bolt Performance Optimization: Wrapped Dashboard in React.memo()
+// Prevents unnecessary re-renders when parent states change
+export const Dashboard = memo(function Dashboard(props: UnifiedDashboardProps) {
 	const [activeView, setActiveView] = useState<DashboardView>("analytics");
 
 	if (!props.isAdmin) {
@@ -147,4 +151,4 @@ export function Dashboard(props: UnifiedDashboardProps) {
 			{activeView === "analytics" ? <AnalyticsDashboard {...props} /> : <AdminDashboard />}
 		</div>
 	);
-}
+});
