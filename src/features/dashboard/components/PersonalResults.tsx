@@ -200,6 +200,8 @@ export const PersonalResults = memo(function PersonalResults({
 								size="small"
 								onClick={() => setShowReorder((prev) => !prev)}
 								className="flex-1 sm:flex-none text-xs font-semibold"
+								aria-expanded={showReorder}
+								aria-controls="reorder-panel"
 							>
 								{showReorder ? "Close Reorder" : "Fine-Tune Ranks"}
 							</Button>
@@ -257,6 +259,7 @@ export const PersonalResults = memo(function PersonalResults({
 			{/* Drag and drop or accessible rank adjustment */}
 			{showReorder && (
 				<motion.div
+					id="reorder-panel"
 					initial={{ opacity: 0, y: -10 }}
 					animate={{ opacity: 1, y: 0 }}
 					exit={{ opacity: 0, y: -10 }}
