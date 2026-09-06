@@ -1,5 +1,6 @@
 import { BarChart3, Settings, Trophy } from "lucide-react";
 import { useMemo, useState } from "react";
+import { MagicToggle } from "@/components/ui/MagicToggle";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { ContextBadge, Panel, SectionHeader } from "./components/Common";
 import {
@@ -124,24 +125,13 @@ export function Dashboard(props: UnifiedDashboardProps) {
 	return (
 		<div className="w-full space-y-6">
 			<div className="flex items-center gap-4 border-b border-border pb-4">
-				<div className="flex gap-2" role="group" aria-label="Dashboard views">
-					{DASHBOARD_VIEW_OPTIONS.map((opt) => (
-						<button
-							key={opt.value}
-							type="button"
-							onClick={() => setActiveView(opt.value)}
-							aria-pressed={activeView === opt.value}
-							className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-								activeView === opt.value
-									? "bg-primary text-primary-foreground"
-									: "bg-muted text-muted-foreground hover:bg-muted/80"
-							}`}
-						>
-							{opt.icon}
-							{opt.label}
-						</button>
-					))}
-				</div>
+				<MagicToggle<DashboardView>
+					options={DASHBOARD_VIEW_OPTIONS}
+					value={activeView}
+					onChange={(val: DashboardView) => setActiveView(val)}
+					ariaLabel="Dashboard views"
+					size="small"
+				/>
 			</div>
 
 			{activeView === "analytics" ? <AnalyticsDashboard {...props} /> : <AdminDashboard />}
