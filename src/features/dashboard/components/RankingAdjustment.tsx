@@ -44,17 +44,33 @@ interface RankingItemContentProps {
 	onMoveDown?: () => void;
 }
 
+const TOP_MEDAL_STYLES: Record<number, { bg: string; border: string; text: string }> = {
+	0: {
+		bg: "from-yellow-500 to-amber-600",
+		border: "border-yellow-600/50",
+		text: "text-white",
+	},
+	1: {
+		bg: "from-slate-300 to-slate-500",
+		border: "border-yellow-600/50",
+		text: "text-white",
+	},
+	2: {
+		bg: "from-amber-700 to-orange-800",
+		border: "border-yellow-600/50",
+		text: "text-white",
+	},
+};
+
+const DEFAULT_MEDAL_STYLE = {
+	bg: "from-primary/20 to-accent/20",
+	border: "border-primary/30",
+	text: "text-foreground",
+};
+
 const RankingItemContent = memo(
 	({ item, index, totalItems, onMoveUp, onMoveDown }: RankingItemContentProps) => {
-		const medalColors = {
-			0: "from-yellow-500 to-amber-600",
-			1: "from-slate-300 to-slate-500",
-			2: "from-amber-700 to-orange-800",
-		};
-		const medalBg =
-			index < 3 ? medalColors[index as keyof typeof medalColors] : "from-primary/20 to-accent/20";
-		const medalBorder = index < 3 ? "border-yellow-600/50" : "border-primary/30";
-		const medalText = index < 3 ? "text-white" : "text-foreground";
+		const medal = TOP_MEDAL_STYLES[index] ?? DEFAULT_MEDAL_STYLE;
 
 		const winRate =
 			item.wins || item.losses
@@ -73,11 +89,11 @@ const RankingItemContent = memo(
 
 				{/* Rank Badge */}
 				<Chip
-					className={`flex-shrink-0 bg-gradient-to-br ${medalBg} border ${medalBorder} ${medalText} font-bold min-w-[2.75rem] shadow-sm`}
+					className={`flex-shrink-0 bg-gradient-to-br ${medal.bg} border ${medal.border} ${medal.text} font-bold min-w-[2.75rem] shadow-sm`}
 					size="lg"
 					variant="flat"
 				>
-					{index < 3 ? ["🥇", "🥈", "🥉"][index] : `#${index + 1}`}
+					{`#${index + 1}`}
 				</Chip>
 
 				{/* Name and Stats */}

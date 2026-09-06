@@ -59,8 +59,10 @@ Copy `.env.example` to `.env` at the project root. The app gracefully degrades w
   - Quotes: Double quotes (`"`).
   - Control Flow: Always use explicit block statements (`{ ... }`) for `if`, `else`, `for`, and `while` loops.
 - **Import Organization**: Automatically organized alphabetically and categorized via `biome check --write`.
+- **Accessibility & ARIA Enforcement**:
+  - ARIA attributes and roles are verified via Biome's `a11y` rules (`useAriaPropsForRole`, `useValidAriaProps`, `useValidAriaValues`, `useAltText`, `useHeadingContent`, `useAriaActivedescendantWithTabindex`).
 - **Validation**:
-  - Run `npm run lint` before committing changes to verify both Biome lint rules and TypeScript type checks.
+  - Run `npm run lint` before committing changes to verify Biome lint rules, accessibility rules, and TypeScript type checks.
   - Use `npm run fix` to auto-resolve formatting and import order discrepancies.
 
 ### 4. React & Hook Best Practices
@@ -91,4 +93,16 @@ Copy `.env.example` to `.env` at the project root. The app gracefully degrades w
 - **Framework**: Vitest with React Testing Library and jsdom (`config/vitest.config.ts`).
 - **Co-location**: Keep test files alongside the code they test (`*.test.ts` or `*.test.tsx`).
 - **Coverage Focus**: Cover critical tournament engine logic, Elo calculation algorithms, storage adapters, and interactive component lifecycles.
+
+### 8. Mechanical Artifact Lifecycle Enforcement
+
+- **Automated Gate**: `npm run lint` mechanically validates syntax, types, unused files, duplicate exports, package dependencies, and folder/naming conventions (`biome` + `tsc` + `knip` + `scripts/validate-structure.ts`).
+- **Pre-Commit Enforcement**: Git commits are validated via `.githooks/pre-commit` (or `npm run precommit`) using `scripts/validate-structure.ts --staged` to reject non-compliant files before staging/committing.
+- **Naming Patterns**:
+  - React Components (`.tsx`): PascalCase (e.g. `TournamentArena.tsx`).
+  - Modules & Utilities (`.ts`): camelCase (e.g. `tournamentEngine.ts`, `storage.ts`, `hooks.ts`, `types.ts`).
+  - Feature Folders: lowercase / kebab-case (e.g. `src/features/tournament/`, `src/features/dashboard/`).
+- **Zero Orphaned Files**: New components and utilities must be connected to an active consumer immediately. Unreferenced files cause `knip` to exit with an error.
+- **Export Discipline**: Use named exports exclusively for components and utility functions. Never export duplicate default and named signatures from the same module.
+- **Strict Layering**: Code must reside within `src/app/`, `src/features/`, `src/shared/`, `src/store/`, or `src/assets/`. Arbitrary root folders (e.g. `src/components/`) are prohibited and will fail lifecycle checks.
 
