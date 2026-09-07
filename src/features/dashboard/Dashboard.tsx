@@ -14,7 +14,7 @@ import { PersonalResults } from "./components/PersonalResults";
 import { useDashboardData } from "./hooks";
 import type { DashboardProps } from "./types";
 
-export type DashboardView = "analytics" | "admin";
+type DashboardView = "analytics" | "admin";
 
 // ⚡ Bolt Performance Optimization: Wrapped AnalyticsDashboard in React.memo()
 export const AnalyticsDashboard = memo(function AnalyticsDashboard({
@@ -108,7 +108,7 @@ const DASHBOARD_VIEW_OPTIONS = [
 	},
 ];
 
-export interface UnifiedDashboardProps extends DashboardProps {
+interface UnifiedDashboardProps extends DashboardProps {
 	isAdmin?: boolean;
 }
 

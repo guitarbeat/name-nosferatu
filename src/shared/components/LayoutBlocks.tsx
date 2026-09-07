@@ -1,10 +1,8 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Loader2, X, XCircle } from "lucide-react";
+import { Loader2, X, XCircle } from "lucide-react";
 import type { ReactNode } from "react";
 import React, {
 	Component,
 	forwardRef,
-	lazy,
 	memo,
 	useCallback,
 	useEffect,
@@ -14,12 +12,10 @@ import React, {
 } from "react";
 import { CAT_IMAGES, FALLBACK_CAT_IMAGE, FALLBACK_CAT_SVG } from "@/shared/lib/constants";
 import { themeSurfaces } from "@/shared/lib/uiUtils";
-import { cn, ErrorManager } from "@/shared/lib/utils";
+import { cn, ErrorManager, handleImgError } from "@/shared/lib/utils";
 
-const _Analytics = () => null;
-
-type ButtonVariant = "primary" | "danger" | "ghost" | "outline" | "flat" | "glass";
-type ButtonSize = "small" | "medium" | "large" | "icon";
+export type ButtonVariant = "primary" | "danger" | "ghost" | "outline" | "flat" | "glass";
+export type ButtonSize = "small" | "medium" | "large" | "icon";
 
 const baseButtonClass =
 	"inline-flex items-center justify-center gap-2.5 whitespace-nowrap font-medium tracking-wide rounded-[var(--radius-button)] transition-transform transition-opacity duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:shrink-0 select-none";
@@ -44,7 +40,7 @@ const sizeClasses: Record<ButtonSize, string> = {
 	icon: "h-10 w-10 p-0 rounded-md [&_svg]:size-4 min-h-[44px] min-w-[44px]",
 };
 
-interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
+export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
 	children: React.ReactNode;
 	variant?: ButtonVariant;
 	size?: ButtonSize;
@@ -101,7 +97,7 @@ ButtonComponent.displayName = "Button";
 
 export const Button = memo(ButtonComponent);
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 	children?: React.ReactNode;
 	variant?: "default" | "filled";
 	padding?: "none" | "medium";
@@ -146,7 +142,7 @@ CardBase.displayName = "Card";
 
 export const Card = CardBase;
 
-interface CatImageProps {
+export interface CatImageProps {
 	src?: string;
 	alt?: string;
 	containerClassName?: string;
@@ -208,7 +204,7 @@ function CatImage({
 
 export { CatImage };
 
-interface EmptyStateProps {
+export interface EmptyStateProps {
 	title: string;
 	description?: ReactNode;
 	className?: string;
@@ -229,20 +225,20 @@ export function EmptyState({ title, description, className }: EmptyStateProps) {
 	);
 }
 
-interface ErrorBoundaryProps {
+export interface ErrorBoundaryProps {
 	children: ReactNode;
 	fallback?: React.ComponentType<ErrorFallbackProps>;
 	onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 	context?: string;
 }
 
-interface ErrorBoundaryState {
+export interface ErrorBoundaryState {
 	hasError: boolean;
 	error: Error | null;
 	errorId: string | null;
 }
 
-interface ErrorFallbackProps {
+export interface ErrorFallbackProps {
 	error: Error | null;
 	errorId: string | null;
 	resetError: () => void;
@@ -339,7 +335,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 	}
 }
 
-interface AppError {
+export interface AppError {
 	message?: string;
 	severity?: string;
 	isRetryable?: boolean;
@@ -354,7 +350,7 @@ interface AppError {
 	[key: string]: unknown;
 }
 
-interface ErrorProps {
+export interface ErrorProps {
 	variant?: "boundary" | "inline";
 	error?: AppError | string | unknown;
 	onDismiss?: () => void;
@@ -363,7 +359,7 @@ interface ErrorProps {
 	children?: React.ReactNode;
 }
 
-interface ErrorInlineProps {
+export interface ErrorInlineProps {
 	error: AppError | string | unknown;
 	onDismiss?: () => void;
 	className?: string;
@@ -415,21 +411,7 @@ export const ErrorComponent: React.FC<ErrorProps> = ({
 
 ErrorComponent.displayName = "ErrorComponent";
 
-const _LazyProfileInner = lazy(() =>
-	import("@/shared/components/UIBlocks").then((module) => ({
-		default: module.ProfileInner,
-	})),
-);
-
-type NavSection = "pick" | "tournament" | "analysis";
-
-const _keyToId: Record<NavSection, string> = {
-	pick: "pick",
-	tournament: "tournament",
-	analysis: "analysis",
-};
-
-interface BaseFieldProps {
+export interface BaseFieldProps {
 	label?: string;
 	error?: string | null;
 	required?: boolean;
@@ -441,7 +423,7 @@ const inputBaseStyles =
 
 const errorStyles = "border-destructive focus-visible:ring-destructive";
 
-interface FormFieldProps extends BaseFieldProps {
+export interface FormFieldProps extends BaseFieldProps {
 	children: React.ReactNode;
 	id?: string;
 	name?: string;
@@ -492,7 +474,7 @@ const FormField: React.FC<FormFieldProps> = ({
 
 FormField.displayName = "FormField";
 
-interface InputProps
+export interface InputProps
 	extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "className">,
 		BaseFieldProps {}
 
@@ -540,7 +522,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
 Input.displayName = "Input";
 
-interface TextareaProps
+export interface TextareaProps
 	extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "className">,
 		BaseFieldProps {
 	showCount?: boolean;
@@ -616,157 +598,16 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
 Textarea.displayName = "Textarea";
 
-interface LightboxProps {
-	images: string[];
-	currentIndex: number;
-	onClose: () => void;
-	onNavigate: (index: number) => void;
-}
-
-function useLightboxNavigation(
-	imagesLength: number,
-	currentIndex: number,
-	onClose: () => void,
-	onNavigate: (index: number) => void,
-) {
-	// Use a ref to hold onClose so the keyboard effect does not re-register
-	// when the caller passes an unstable inline arrow (e.g. () => setState(false)).
-	const onCloseRef = useRef(onClose);
-	useEffect(() => {
-		onCloseRef.current = onClose;
-	}, [onClose]);
-
-	const handlePrevious = useCallback(() => {
-		onNavigate(currentIndex > 0 ? currentIndex - 1 : imagesLength - 1);
-	}, [onNavigate, currentIndex, imagesLength]);
-
-	const handleNext = useCallback(() => {
-		onNavigate(currentIndex < imagesLength - 1 ? currentIndex + 1 : 0);
-	}, [onNavigate, currentIndex, imagesLength]);
-
-	useEffect(() => {
-		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key === "Escape") {
-				return onCloseRef.current();
-			}
-			if (event.key === "ArrowLeft") {
-				return handlePrevious();
-			}
-			if (event.key === "ArrowRight") {
-				return handleNext();
-			}
-		};
-		document.addEventListener("keydown", handleKeyDown);
-		return () => {
-			document.removeEventListener("keydown", handleKeyDown);
-		};
-	}, [handlePrevious, handleNext]);
-
-	return { handlePrevious, handleNext };
-}
-
-export function Lightbox({ images, currentIndex, onClose, onNavigate }: LightboxProps) {
-	const currentImage = images[currentIndex] || "";
-	const hasMultipleImages = images.length > 1;
-	const closeButtonRef = useRef<HTMLButtonElement>(null);
-
-	const { handlePrevious, handleNext } = useLightboxNavigation(
-		images.length,
-		currentIndex,
-		onClose,
-		onNavigate,
-	);
-
-	// Focus the close button on mount for keyboard accessibility
-	useEffect(() => {
-		closeButtonRef.current?.focus();
-	}, []);
-
-	return (
-		<AnimatePresence>
-			<motion.div
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				exit={{ opacity: 0 }}
-				className="fixed inset-0 z-modal-backdrop flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
-				onClick={onClose}
-				role="dialog"
-				tabIndex={-1}
-				aria-modal="true"
-				aria-label={`Image ${currentIndex + 1} of ${images.length}`}
-			>
-				<button
-					ref={closeButtonRef}
-					type="button"
-					onClick={onClose}
-					className="absolute right-4 top-4 z-10 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer disabled:cursor-not-allowed"
-					aria-label="Close lightbox and return to gallery"
-					title="Close"
-				>
-					<X size={24} />
-				</button>
-
-				{hasMultipleImages && (
-					<button
-						type="button"
-						onClick={(event) => {
-							event.stopPropagation();
-							handlePrevious();
-						}}
-						className="absolute left-4 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-						aria-label="View previous image"
-						title="Previous image"
-					>
-						<ChevronLeft size={24} />
-					</button>
-				)}
-
-				<motion.img
-					src={currentImage}
-					alt={`Cat ${currentIndex + 1} of ${images.length}`}
-					className="max-h-[90vh] max-w-[90vw] select-none object-contain"
-					initial={{ scale: 0.96, opacity: 0 }}
-					animate={{ scale: 1, opacity: 1 }}
-					exit={{ scale: 0.96, opacity: 0 }}
-					transition={{ duration: 0.18 }}
-					onClick={(event) => event.stopPropagation()}
-					loading="eager"
-					decoding="async"
-				/>
-
-				{hasMultipleImages && (
-					<button
-						type="button"
-						onClick={(event) => {
-							event.stopPropagation();
-							handleNext();
-						}}
-						className="absolute right-4 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-						aria-label="View next image"
-						title="Next image"
-					>
-						<ChevronRight size={24} />
-					</button>
-				)}
-
-				<div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-sm font-medium text-white">
-					Image {currentIndex + 1} of {images.length}
-				</div>
-			</motion.div>
-		</AnimatePresence>
-	);
-}
-
 const LOADING_ASSET = "/assets/images/cats/cat.gif";
 
-interface LoadingProps {
+export interface LoadingProps {
 	variant?: "spinner" | "skeleton" | "card-skeleton" | "cat-gif";
 	text?: string;
 	className?: string;
 	height?: string | number;
 }
 
-export function SpinnerCircle({
+function SpinnerCircle({
 	size = "medium",
 	className,
 }: {
@@ -853,9 +694,7 @@ export const Loading: React.FC<LoadingProps> = memo(
 						alt=""
 						aria-hidden="true"
 						className="h-44 w-auto select-none object-contain opacity-95"
-						onError={(e) => {
-							e.currentTarget.src = FALLBACK_CAT_SVG;
-						}}
+						onError={handleImgError}
 					/>
 					{text && <p className="text-[10px] font-semibold tracking-wide text-white/35">{text}</p>}
 				</div>
@@ -880,7 +719,7 @@ Loading.displayName = "Loading";
 const FOCUSABLE_SELECTOR =
 	'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-interface ModalProps {
+export interface ModalProps {
 	title: string;
 	open?: boolean;
 	onClose: () => void;
@@ -916,7 +755,7 @@ function useModalAnimation(isOpenResolved: boolean) {
 	return { isClosing, shouldRender };
 }
 
-interface ModalHeaderProps {
+export interface ModalHeaderProps {
 	title: string;
 	hideTitle: boolean;
 	requestClose: () => void;
@@ -1139,7 +978,7 @@ export function OfflineIndicator() {
 	);
 }
 
-interface SectionProps {
+export interface SectionProps {
 	id?: string;
 	children: ReactNode;
 	maxWidth?: "md" | "xl" | "2xl" | "full";

@@ -1,101 +1,86 @@
-import type { NameItem } from "@/shared/types";
+import type { IdType, NameItem, RatingData, RatingInput } from "@/shared/types";
+
+/**
+ * Default sample names used as fallback when database is empty or offline.
+ */
+export const DEFAULT_SAMPLE_NAMES: NameItem[] = [
+	{ id: "1", name: "Nosferatu", description: "The immortal feline count with shadowy charm" },
+	{ id: "2", name: "Luna", description: "Graceful and mysterious moonlit tabby" },
+	{
+		id: "3",
+		name: "Miso",
+		description: "Sweet and playful companion who purrs like an engine",
+	},
+	{ id: "4", name: "Pixel", description: "Tech-savvy, energetic, and clever troublemaker" },
+	{ id: "5", name: "Saffron", description: "Warm and spicy personality with golden fur" },
+	{ id: "6", name: "Noodle", description: "Long, stretchy acrobatic champion" },
+	{ id: "7", name: "Ziggy", description: "Bold and energetic fearless explorer" },
+	{ id: "8", name: "Whiskers", description: "Classic, timeless, and distinguished gentlegato" },
+	{ id: "9", name: "Pepper", description: "Small but mighty whirlwind of energy" },
+	{
+		id: "10",
+		name: "Shadow",
+		description: "Silent stalker of dust motes and midnight zoomies",
+	},
+	{ id: "11", name: "Milo", description: "Friendly adventurer with curious streak" },
+	{ id: "12", name: "Barnaby", description: "Dignified floof with a heart of gold" },
+];
+
+/**
+ * Normalizes a record of ratings (raw numbers or RatingData) to standard RatingData.
+ */
+export function normalizeRatingsWithStats(
+	ratings: Record<string, RatingInput | undefined> | null | undefined,
+): Record<string, RatingData> {
+	if (!ratings) {
+		return {};
+	}
+	const result: Record<string, RatingData> = {};
+	for (const id of Object.keys(ratings)) {
+		const entry = ratings[id];
+		if (entry == null) {
+			continue;
+		}
+		if (typeof entry === "number") {
+			result[id] = { rating: entry, wins: 0, losses: 0 };
+		} else {
+			result[id] = {
+				rating: typeof entry.rating === "number" ? entry.rating : 1500,
+				wins: typeof entry.wins === "number" ? entry.wins : 0,
+				losses: typeof entry.losses === "number" ? entry.losses : 0,
+			};
+		}
+	}
+	return result;
+}
+
+/**
+ * Safely looks up the rating data for a name by id, stringified id, or name.
+ */
+export function getRatingForName(
+	ratings: Record<string, RatingData | undefined> | null | undefined,
+	name: NameItem | { id?: IdType | number; name?: string } | null | undefined,
+): RatingData | undefined {
+	if (!ratings || !name) {
+		return undefined;
+	}
+	const id = name.id == null ? undefined : String(name.id);
+	const nameKey = name.name;
+	if (id && ratings[id]) {
+		return ratings[id];
+	}
+	if (nameKey && ratings[nameKey]) {
+		return ratings[nameKey];
+	}
+	return undefined;
+}
 
 /** Raw row shape — accepts both snake_case and camelCase fields. */
-interface RawNameRow {
-	id?: string | number;
-	name?: string;
-	description?: string | null;
-	pronunciation?: string | null;
-	avg_rating?: number | null;
-	avgRating?: number | null;
-	global_wins?: number | null;
-	globalWins?: number | null;
-	global_losses?: number | null;
-	globalLosses?: number | null;
-	created_at?: string | null;
-	createdAt?: string | null;
-	is_hidden?: boolean;
-	isHidden?: boolean;
-	is_active?: boolean | null;
-	isActive?: boolean | null;
-	locked_in?: boolean;
-	lockedIn?: boolean;
-	is_deleted?: boolean;
-	isDeleted?: boolean;
-	status?: string | null;
-	provenance?: unknown;
-	wins?: number;
-	losses?: number;
-	popularity_score?: number;
-	has_user_rating?: boolean;
-	[key: string]: unknown;
-}
 
 /**
  * Maps a raw database row (snake_case or camelCase) to a canonical NameItem.
  * Single source of truth — all name-fetching code should use this.
  */
-export function mapNameRow(row: RawNameRow): NameItem {
-	const rating =
-		typeof row.avg_rating === "number"
-			? row.avg_rating
-			: typeof row.avgRating === "number"
-				? row.avgRating
-				: 1500;
-
-	const createdAt =
-		typeof row.created_at === "string"
-			? row.created_at
-			: typeof row.createdAt === "string"
-				? row.createdAt
-				: null;
-
-	const hidden = Boolean(row.is_hidden ?? row.isHidden ?? false);
-	const active =
-		row.is_active == null && row.isActive == null ? true : Boolean(row.is_active ?? row.isActive);
-	const locked = Boolean(row.locked_in ?? row.lockedIn ?? false);
-
-	const wins =
-		typeof row.global_wins === "number"
-			? row.global_wins
-			: typeof row.globalWins === "number"
-				? row.globalWins
-				: typeof row.wins === "number"
-					? row.wins
-					: 0;
-
-	const losses =
-		typeof row.global_losses === "number"
-			? row.global_losses
-			: typeof row.globalLosses === "number"
-				? row.globalLosses
-				: typeof row.losses === "number"
-					? row.losses
-					: 0;
-
-	return {
-		id: String(row.id ?? ""),
-		name: String(row.name ?? ""),
-		description: typeof row.description === "string" ? row.description : "",
-		pronunciation: typeof row.pronunciation === "string" ? row.pronunciation : undefined,
-		avgRating: rating,
-		avg_rating: rating,
-		createdAt,
-		created_at: createdAt,
-		isHidden: hidden,
-		is_hidden: hidden,
-		isActive: active,
-		is_active: active,
-		lockedIn: locked,
-		locked_in: locked,
-		wins,
-		losses,
-		status: (typeof row.status === "string" ? row.status : "candidate") as NameItem["status"],
-		provenance: Array.isArray(row.provenance) ? row.provenance : [],
-		has_user_rating: Boolean(row.has_user_rating),
-		popularity_score: typeof row.popularity_score === "number" ? row.popularity_score : undefined,
-	};
-}
 
 /**
  * Checks if a name item is hidden.
@@ -114,12 +99,6 @@ export function isNameLocked(name: NameItem | null | undefined): boolean {
 /**
  * Checks if a name item is active (neither hidden nor locked).
  */
-export function isNameActive(name: NameItem | null | undefined): boolean {
-	if (!name) {
-		return false;
-	}
-	return !isNameHidden(name) && !isNameLocked(name);
-}
 
 /**
  * Filters a list of names to only those that are not hidden.
@@ -181,4 +160,7 @@ export function matchesNameSearchTerm(
 		name.name.toLowerCase().includes(normalizedTerm) ||
 		(name.description ?? "").toLowerCase().includes(normalizedTerm)
 	);
+}
+function isNameActive(name: NameItem): boolean {
+	return !name.is_hidden && !name.locked_in;
 }
