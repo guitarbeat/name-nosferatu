@@ -4,6 +4,10 @@ import {
 	deriveBracketState,
 	EloRating,
 	generateRandomTeams,
+	getHeatCardClasses,
+	getHeatGradientClasses,
+	getHeatLevel,
+	getHeatTextClasses,
 	resolveTournamentMode,
 } from "./tournamentEngine";
 
@@ -69,6 +73,55 @@ describe("tournamentEngine", () => {
 			expect(metrics.totalMatches).toBe(3);
 			expect(metrics.matchNumber).toBe(1);
 			expect(metrics.progress).toBe(0);
+		});
+	});
+
+	describe("heat visual helpers", () => {
+		it("returns correct heat level based on streak", () => {
+			expect(getHeatLevel(0)).toBeNull();
+			expect(getHeatLevel(2)).toBeNull();
+			expect(getHeatLevel(3)).toBe("warm");
+			expect(getHeatLevel(4)).toBe("warm");
+			expect(getHeatLevel(5)).toBe("hot");
+			expect(getHeatLevel(6)).toBe("hot");
+			expect(getHeatLevel(7)).toBe("blazing");
+			expect(getHeatLevel(10)).toBe("blazing");
+		});
+
+		it("returns correct card classes for heat levels", () => {
+			expect(getHeatCardClasses(null)).toBe("");
+			expect(getHeatCardClasses("warm")).toBe("ring-1 ring-orange-400/50 shadow-sm");
+			expect(getHeatCardClasses("hot")).toBe("ring-2 ring-amber-500/70 shadow-md");
+			expect(getHeatCardClasses("blazing")).toBe("ring-2 ring-orange-500/80 shadow-lg");
+		});
+
+		it("returns correct text classes for heat levels", () => {
+			expect(getHeatTextClasses("warm")).toBe(
+				"text-orange-100 border-orange-300/35 bg-orange-500/10",
+			);
+			expect(getHeatTextClasses("hot")).toBe("text-amber-200 border-amber-300/45 bg-amber-500/15");
+			expect(getHeatTextClasses("blazing")).toBe(
+				"text-orange-200 border-orange-300/45 bg-orange-500/15",
+			);
+		});
+
+		it("returns gradient classes for heat levels", () => {
+			expect(getHeatGradientClasses("warm")).toBe(
+				"bg-gradient-to-t from-orange-500/20 via-amber-200/10 to-transparent",
+			);
+			expect(getHeatGradientClasses("hot")).toBe(
+				"bg-gradient-to-t from-orange-500/35 via-amber-300/20 to-transparent",
+			);
+			expect(getHeatGradientClasses("blazing")).toBe(
+				"bg-gradient-to-t from-orange-500/45 via-amber-400/25 to-transparent",
+			);
+		});
+
+		it("returns default classes for invalid/unknown inputs", () => {
+			// @ts-expect-error Testing fallback behavior for invalid heat level input
+			expect(getHeatGradientClasses("unknown")).toBe(
+				"bg-gradient-to-t from-orange-500/20 via-amber-200/10 to-transparent",
+			);
 		});
 	});
 });
