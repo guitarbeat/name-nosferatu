@@ -6,47 +6,56 @@ import { useAdminDashboard } from "../hooks";
 import type { AdminStatsGridProps, NameWithStats } from "../types";
 import { FILTER_OPTIONS } from "../utils";
 
+interface AdminStatCardConfig {
+	key: keyof AdminStatsGridProps["stats"];
+	icon: typeof BarChart3;
+	accentColor: string;
+	bgColor: string;
+	borderColor: string;
+	label: string;
+}
+
+const ADMIN_STAT_CARDS: readonly AdminStatCardConfig[] = [
+	{
+		key: "totalNames",
+		icon: BarChart3,
+		accentColor: "text-primary",
+		bgColor: "bg-primary/10",
+		borderColor: "border-primary/20",
+		label: "Total Pool",
+	},
+	{
+		key: "activeNames",
+		icon: Eye,
+		accentColor: "text-accent",
+		bgColor: "bg-accent/10",
+		borderColor: "border-accent/20",
+		label: "Active In Pool",
+	},
+	{
+		key: "lockedInNames",
+		icon: Lock,
+		accentColor: "text-amber-400",
+		bgColor: "bg-amber-400/10",
+		borderColor: "border-amber-400/20",
+		label: "Locked In",
+	},
+	{
+		key: "hiddenNames",
+		icon: EyeOff,
+		accentColor: "text-destructive",
+		bgColor: "bg-destructive/10",
+		borderColor: "border-destructive/20",
+		label: "Hidden From Public",
+	},
+] as const;
+
 // ⚡ Bolt Performance Optimization: Wrapped AdminStatsGrid in React.memo()
 // Prevents unnecessary re-renders of the stats grid during search input
 const AdminStatsGrid = memo(function AdminStatsGrid({ stats }: AdminStatsGridProps) {
-	const statCards = [
-		{
-			icon: BarChart3,
-			accentColor: "text-primary",
-			bgColor: "bg-primary/10",
-			borderColor: "border-primary/20",
-			label: "Total Pool",
-			value: stats.totalNames,
-		},
-		{
-			icon: Eye,
-			accentColor: "text-accent",
-			bgColor: "bg-accent/10",
-			borderColor: "border-accent/20",
-			label: "Active In Pool",
-			value: stats.activeNames,
-		},
-		{
-			icon: Lock,
-			accentColor: "text-amber-400",
-			bgColor: "bg-amber-400/10",
-			borderColor: "border-amber-400/20",
-			label: "Locked In",
-			value: stats.lockedInNames,
-		},
-		{
-			icon: EyeOff,
-			accentColor: "text-destructive",
-			bgColor: "bg-destructive/10",
-			borderColor: "border-destructive/20",
-			label: "Hidden From Public",
-			value: stats.hiddenNames,
-		},
-	];
-
 	return (
 		<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-			{statCards.map(({ icon: Icon, accentColor, bgColor, borderColor, label, value }) => (
+			{ADMIN_STAT_CARDS.map(({ key, icon: Icon, accentColor, bgColor, borderColor, label }) => (
 				<div
 					key={label}
 					className={`group relative overflow-hidden rounded-2xl border ${borderColor} bg-card/70 p-4 sm:p-5 shadow-sm backdrop-blur-sm transition-all hover:border-border hover:shadow-md`}
@@ -62,7 +71,7 @@ const AdminStatsGrid = memo(function AdminStatsGrid({ stats }: AdminStatsGridPro
 						</div>
 					</div>
 					<p className="font-mono text-2xl sm:text-3xl font-bold tracking-tight text-foreground tabular-nums">
-						{value}
+						{stats[key]}
 					</p>
 				</div>
 			))}

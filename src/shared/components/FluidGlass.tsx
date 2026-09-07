@@ -83,7 +83,7 @@ export interface FluidGlassProps {
 	style?: CSSProperties;
 }
 
-export default function FluidGlass({
+export function FluidGlass({
 	mode = "lens",
 	lensProps = {},
 	barProps = {},
@@ -132,7 +132,7 @@ export default function FluidGlass({
 	);
 }
 
-interface ModeWrapperProps {
+export interface ModeWrapperProps {
 	children?: React.ReactNode;
 	glb: string;
 	geometryKey: string;
@@ -484,5 +484,3 @@ function Typography({ textColor }: { textColor: string }) {
 		</DreiText>
 	);
 }
-
-export { FluidGlass };
