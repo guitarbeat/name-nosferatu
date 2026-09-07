@@ -467,6 +467,7 @@ export const TopNamesChart = memo(function TopNamesChart({
 	limit?: number;
 }) {
 	const { data, allRatings } = useMemo(() => {
+		// ⚡ Bolt Performance Optimization: Single-pass loop with pre-allocated arrays to avoid reduce & closure overhead
 		const chartLimit = Math.min(limit, leaderboard.length);
 		const chartData: Array<{
 			name: string;
