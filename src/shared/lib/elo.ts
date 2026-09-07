@@ -273,6 +273,7 @@ function calculateSideAggregate(
 	if (participantIds.length === 0) {
 		throw new Error("Cannot calculate Elo for an empty side");
 	}
+	// ⚡ Bolt Performance Optimization: Single-pass for loop to avoid callback overhead and allocations
 	let ratingSum = 0;
 	let winsSum = 0;
 	let lossesSum = 0;
