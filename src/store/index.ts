@@ -34,17 +34,13 @@ import type {
 	UserState,
 } from "@/shared/types";
 
-export type AppSet = Parameters<StateCreator<AppState>>[0];
-export type AppSliceCreator<TSlice> = StateCreator<AppState, [], [], TSlice>;
+type AppSet = Parameters<StateCreator<AppState>>[0];
+type AppSliceCreator<TSlice> = StateCreator<AppState, [], [], TSlice>;
 
-export const IS_BROWSER = typeof window !== "undefined";
-export const IS_DEV = import.meta.env?.DEV ?? false;
+const IS_BROWSER = typeof window !== "undefined";
+const _IS_DEV = import.meta.env?.DEV ?? false;
 
-export function patch<K extends keyof AppState>(
-	set: AppSet,
-	key: K,
-	updates: Partial<AppState[K]>,
-): void {
+function patch<K extends keyof AppState>(set: AppSet, key: K, updates: Partial<AppState[K]>): void {
 	set((state) => {
 		const current = state[key];
 		let hasChanged = false;
@@ -64,7 +60,7 @@ export function patch<K extends keyof AppState>(
 	});
 }
 
-export interface TournamentActions {
+interface TournamentActions {
 	setNames: (names: NameItem[] | null) => void;
 	setRatings: (
 		ratings:
@@ -87,7 +83,7 @@ export interface TournamentActions {
 	replaceTournamentState: (snapshot: TournamentState) => void;
 }
 
-export interface UserActions {
+interface UserActions {
 	setUser: (data: Partial<UserState>) => void;
 	login: (userName: string, onContext?: (name: string) => void) => void;
 	logout: (onContext?: (name: null) => void) => void;
@@ -96,24 +92,24 @@ export interface UserActions {
 	initializeFromStorage: (onContext?: (name: string) => void) => void;
 }
 
-export interface UIActions {
+interface UIActions {
 	setTheme: (theme: ThemePreference) => void;
 	initializeTheme: () => void;
 	setBootLoading: (loading: boolean) => void;
 }
 
-export interface SiteSettingsActions {
+interface SiteSettingsActions {
 	setCatChosenName: (data: CatChosenName | null) => void;
 	markSettingsLoaded: () => void;
 }
 
-export interface ErrorActions {
+interface ErrorActions {
 	setError: (error: unknown | null) => void;
 	clearError: () => void;
 	logError: (error: unknown, context: string, metadata?: Record<string, unknown>) => void;
 }
 
-export interface AppState {
+interface AppState {
 	tournament: TournamentState;
 	tournamentActions: TournamentActions;
 
@@ -132,7 +128,7 @@ export interface AppState {
 
 const MAX_ERROR_HISTORY = 100;
 
-export const createErrorSlice: AppSliceCreator<Pick<AppState, "errors" | "errorActions">> = (
+const createErrorSlice: AppSliceCreator<Pick<AppState, "errors" | "errorActions">> = (
 	set,
 	get,
 ) => ({
@@ -254,9 +250,10 @@ function persistTournamentState(tournament: TournamentState): void {
 	void saveStoredTournamentToIDB(snapshot);
 }
 
-export const createTournamentSlice: AppSliceCreator<
-	Pick<AppState, "tournament" | "tournamentActions">
-> = (set, get) => ({
+const createTournamentSlice: AppSliceCreator<Pick<AppState, "tournament" | "tournamentActions">> = (
+	set,
+	get,
+) => ({
 	tournament: getInitialTournamentState(),
 
 	tournamentActions: {
@@ -524,7 +521,7 @@ function persistUserState(user: UserState): void {
 	});
 }
 
-export const createUserAndSettingsSlice: AppSliceCreator<
+const createUserAndSettingsSlice: AppSliceCreator<
 	Pick<
 		AppState,
 		"user" | "userActions" | "ui" | "uiActions" | "siteSettings" | "siteSettingsActions"

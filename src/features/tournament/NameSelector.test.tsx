@@ -127,7 +127,7 @@ describe("<NameSelector />", () => {
 		unmount();
 	});
 
-	it("renders empty state message when data returns no visible names and no error", () => {
+	it("renders nothing when data returns no visible names and no error", () => {
 		// @ts-expect-error Mocking partial UseQueryResult for testing empty state
 		vi.mocked(useQuery).mockReturnValue({
 			data: { names: [{ id: "h1", name: "HiddenCat", isHidden: true }] },
@@ -143,7 +143,7 @@ describe("<NameSelector />", () => {
 			</QueryClientProvider>,
 		);
 
-		expect(html).toContain("No names available to display");
+		expect(html).toBe('<div class="mx-auto w-full flex flex-col"></div>');
 	});
 
 	it("renders DriftWall with provided names when query succeeds", () => {
@@ -193,36 +193,56 @@ describe("<NameSelector />", () => {
 		expect(html).toContain("drift-wall");
 	});
 
-	it("automatically pre-selects candidates on initial render when selection is empty and candidates count >= 8", () => {
-		const candidateList = Array.from({ length: 10 }, (_, i) => ({
+	it("allows manual selection of candidates via Select Top 8 / Clear button", () => {
+		const testNames = Array.from({ length: 10 }, (_, i) => ({
 			id: `id-${i + 1}`,
 			name: `Cat ${i + 1}`,
 			description: `Description ${i + 1}`,
 			isHidden: false,
 		}));
 
-		// @ts-expect-error Mocking partial UseQueryResult for testing initial selection logic
+		// @ts-expect-error Mocking partial UseQueryResult for testing manual selection
 		vi.mocked(useQuery).mockReturnValue({
-			data: { names: candidateList },
+			data: { names: testNames },
 			isPending: false,
 			isLoading: false,
 			error: null,
 			refetch: vi.fn(),
 		});
 
-		expect(useAppStore.getState().tournament.selectedNames).toHaveLength(0);
-
 		const queryClient = createTestQueryClient();
-		const { unmount } = renderComponent(
+		const { container, unmount } = renderComponent(
 			<QueryClientProvider client={queryClient}>
 				<NameSelector />
 			</QueryClientProvider>,
 		);
 
-		const selectedNames = useAppStore.getState().tournament.selectedNames;
+		expect(useAppStore.getState().tournament.selectedNames).toHaveLength(0);
+
+		// Find "Select Top 8" button
+		const buttons = Array.from(container.querySelectorAll("button"));
+		const top8Button = buttons.find((b) => b.textContent?.includes("Select Top 8"));
+		expect(top8Button).toBeDefined();
+
+		act(() => {
+			top8Button?.click();
+		});
+
+		let selectedNames = useAppStore.getState().tournament.selectedNames;
 		expect(selectedNames).toHaveLength(8);
-		expect(selectedNames[0].name).toBe("Cat 1");
-		expect(selectedNames[7].name).toBe("Cat 8");
+
+		// Click Clear button
+		const clearButton = Array.from(container.querySelectorAll("button")).find((b) =>
+			b.textContent?.includes("Clear"),
+		);
+		expect(clearButton).toBeDefined();
+
+		act(() => {
+			clearButton?.click();
+		});
+
+		selectedNames = useAppStore.getState().tournament.selectedNames;
+		expect(selectedNames).toHaveLength(0);
 
 		unmount();
 	});
@@ -243,16 +263,23 @@ describe("<NameSelector />", () => {
 		});
 
 		const queryClient = createTestQueryClient();
-		const { unmount } = renderComponent(
-			<QueryClientProvider client={queryClient}>
-				<NameSelector />
-			</QueryClientProvider>,
-		);
+		let unmountFn: () => void = () => {};
+
+		act(() => {
+			const res = renderComponent(
+				<QueryClientProvider client={queryClient}>
+					<NameSelector />
+				</QueryClientProvider>,
+			);
+			unmountFn = res.unmount;
+		});
 
 		const selectedNames = useAppStore.getState().tournament.selectedNames;
 		expect(selectedNames.some((n) => n.id === "l1")).toBe(true);
 
-		unmount();
+		act(() => {
+			unmountFn();
+		});
 	});
 
 	it("toggles name selection when tile is clicked", () => {
@@ -271,16 +298,21 @@ describe("<NameSelector />", () => {
 		});
 
 		const queryClient = createTestQueryClient();
-		const { container, unmount } = renderComponent(
-			<QueryClientProvider client={queryClient}>
-				<NameSelector />
-			</QueryClientProvider>,
-		);
+		let containerEl: HTMLElement | null = null;
+		let unmountFn: () => void = () => {};
 
-		expect(useAppStore.getState().tournament.selectedNames).toHaveLength(0);
+		act(() => {
+			const res = renderComponent(
+				<QueryClientProvider client={queryClient}>
+					<NameSelector />
+				</QueryClientProvider>,
+			);
+			containerEl = res.container;
+			unmountFn = res.unmount;
+		});
 
 		// Click tile for Tomi
-		const tile = container.querySelector('[aria-label="Tomi"]') as HTMLElement | null;
+		const tile = containerEl?.querySelector('[data-tile-id="0-0-0"]') as HTMLElement | null;
 		expect(tile).not.toBeNull();
 
 		act(() => {
@@ -299,7 +331,9 @@ describe("<NameSelector />", () => {
 		selectedNames = useAppStore.getState().tournament.selectedNames;
 		expect(selectedNames).toHaveLength(0);
 
-		unmount();
+		act(() => {
+			unmountFn();
+		});
 	});
 
 	it("does not toggle locked names when tile is clicked", () => {
@@ -318,17 +352,24 @@ describe("<NameSelector />", () => {
 		});
 
 		const queryClient = createTestQueryClient();
-		const { container, unmount } = renderComponent(
-			<QueryClientProvider client={queryClient}>
-				<NameSelector />
-			</QueryClientProvider>,
-		);
+		let containerEl: HTMLElement | null = null;
+		let unmountFn: () => void = () => {};
+
+		act(() => {
+			const res = renderComponent(
+				<QueryClientProvider client={queryClient}>
+					<NameSelector />
+				</QueryClientProvider>,
+			);
+			containerEl = res.container;
+			unmountFn = res.unmount;
+		});
 
 		// Locked name is auto-selected by useEffect
 		expect(useAppStore.getState().tournament.selectedNames.map((n) => n.id)).toEqual(["lock1"]);
 
-		// Attempting to click locked tile should do nothing
-		const lockedTile = container.querySelector('[aria-label="LockedCat"]') as HTMLElement | null;
+		// Attempting to click locked tile (first tile for lock1) should do nothing
+		const lockedTile = containerEl?.querySelector('[data-tile-id="0-0-0"]') as HTMLElement | null;
 		expect(lockedTile).not.toBeNull();
 
 		act(() => {
@@ -337,6 +378,8 @@ describe("<NameSelector />", () => {
 
 		expect(useAppStore.getState().tournament.selectedNames.map((n) => n.id)).toEqual(["lock1"]);
 
-		unmount();
+		act(() => {
+			unmountFn();
+		});
 	});
 });

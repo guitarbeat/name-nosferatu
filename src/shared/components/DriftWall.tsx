@@ -7,10 +7,10 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { FALLBACK_CAT_SVG } from "@/shared/lib/constants";
+import { handleImgError } from "@/shared/lib/utils";
 
 export interface DriftWallItem {
-	image: string;
+	image?: string;
 	title?: string;
 	subtitle?: string;
 	href?: string;
@@ -27,7 +27,7 @@ export interface DriftWallProps {
 	tileWidth?: number;
 	tileHeight?: number;
 	gap?: number;
-	radius?: number;
+	radius?: number | string;
 	tilt?: number;
 	turn?: number;
 	roll?: number;
@@ -78,13 +78,13 @@ const columnFactor = (index: number, variance: number) => {
 
 export const DriftWall = ({
 	items = DEFAULT_ITEMS,
-	columns = 5,
-	tileWidth = 200,
-	tileHeight = 132,
+	columns = 8,
+	tileWidth = 116,
+	tileHeight = 116,
 	gap = 18,
-	radius = 14,
-	tilt = 16,
-	turn = -14,
+	radius = 9999,
+	tilt = 0,
+	turn = 0,
 	roll = 0,
 	perspective = 1200,
 	depth = 120,
@@ -92,10 +92,10 @@ export const DriftWall = ({
 	direction = "up",
 	variance = 0.45,
 	parallax = 0.6,
-	pauseOnHover = false,
+	pauseOnHover = true,
 	lift = 64,
-	fade = 0.6,
-	dim = 0.55,
+	fade = 0,
+	dim = 1,
 	grayscale = false,
 	overlayColor = "#060010",
 	className = "",
@@ -172,27 +172,44 @@ export const DriftWall = ({
 		return () => ro.disconnect();
 	}, []);
 
-	const isMobile = containerWidth < 640;
-	const isTablet = containerWidth >= 640 && containerWidth < 1024;
+	const isMobile = containerWidth > 0 && containerWidth < 640;
 
-	const effectiveTileWidth = isMobile ? 140 : isTablet ? 175 : tileWidth;
-	const effectiveTileHeight = isMobile ? 95 : isTablet ? 120 : tileHeight;
+	const effectiveTileWidth = isMobile ? Math.min(tileWidth, 100) : tileWidth;
+	const effectiveTileHeight = isMobile
+		? tileWidth === tileHeight
+			? Math.min(tileHeight, 100)
+			: Math.min(tileHeight, 95)
+		: tileHeight;
 
 	const effectiveColumns = useMemo(() => {
 		const unit = effectiveTileWidth + gap;
-		const calculated = Math.max(2, Math.round(containerWidth / unit));
-		return columns && columns !== 5 ? columns : calculated;
-	}, [containerWidth, effectiveTileWidth, gap, columns]);
+		const maxFitting = Math.max(2, Math.floor((containerWidth + gap) / unit));
+		if (columns) {
+			return isMobile && containerWidth < 480
+				? Math.min(columns, 3)
+				: Math.min(columns, maxFitting);
+		}
+		return maxFitting;
+	}, [containerWidth, effectiveTileWidth, gap, columns, isMobile]);
 
 	const columnItems = useMemo(() => {
+		if (!items.length) {
+			return Array.from({ length: effectiveColumns }, () => []);
+		}
 		const cols: DriftWallItem[][] = Array.from({ length: effectiveColumns }, () => []);
-		items.forEach((item, i) => {
-			const targetCol = cols[i % effectiveColumns];
-			if (targetCol) {
-				targetCol.push(item);
+		const minPerCol = Math.max(3, Math.ceil(items.length / effectiveColumns) + 1);
+		for (let c = 0; c < effectiveColumns; c++) {
+			const colList: DriftWallItem[] = [];
+			for (let r = 0; r < minPerCol; r++) {
+				const itemIndex = (c + r * 3) % items.length;
+				const candidate = items[itemIndex] ?? items[0];
+				if (candidate) {
+					colList.push(candidate);
+				}
 			}
-		});
-		return cols.map((col) => (col.length ? col : items.slice(0, 1)));
+			cols[c] = colList;
+		}
+		return cols;
 	}, [items, effectiveColumns]);
 
 	const columnMeta = useMemo(() => {
@@ -359,7 +376,7 @@ export const DriftWall = ({
 				"--dw-tile-w": `${effectiveTileWidth}px`,
 				"--dw-tile-h": `${effectiveTileHeight}px`,
 				"--dw-gap": `${gap}px`,
-				"--dw-radius": `${radius}px`,
+				"--dw-radius": typeof radius === "number" ? `${radius}px` : radius,
 				"--dw-perspective": `${perspective}px`,
 				"--dw-lift": `${lift}px`,
 				"--dw-dim": dim,
@@ -396,30 +413,107 @@ export const DriftWall = ({
 	);
 
 	const renderTile = (item: DriftWallItem, id: string, colIndex: number, originalIndex: number) => {
+		const pathId = `textpath-${id.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+		const desc = item.subtitle ? String(item.subtitle).trim() : "";
+		const title = item.title ? String(item.title).trim() : "";
+
+		// Dynamic font size and letter-spacing scaling for maximum curved text legibility
+		const descLen = desc.length;
+		const descFontSize =
+			descLen > 65 ? 9.8 : descLen > 50 ? 10.5 : descLen > 35 ? 11.5 : descLen > 20 ? 12.5 : 13.5;
+		const descLetterSpacing =
+			descLen > 65 ? 0.4 : descLen > 50 ? 0.5 : descLen > 35 ? 0.6 : descLen > 20 ? 0.7 : 0.8;
+
+		const titleLen = title.length;
+		const titleFontSize = titleLen > 11 ? 16 : titleLen > 8 ? 18.5 : titleLen > 5 ? 21.5 : 24.5;
+
+		const fullLabel = title ? (desc ? `${title} - ${desc}` : title) : "tile";
+
+		// Compute repeated orbit phrase with clean space separation (no diamond)
+		const spacer = "\u00A0\u00A0\u00A0\u00A0\u00A0";
+		const baseOrbitUnit = desc ? `${desc}${spacer}` : `${title}${spacer}`;
+		const approxCharWidth = descFontSize * 0.54 + descLetterSpacing;
+		const unitWidth = Math.max(40, baseOrbitUnit.length * approxCharWidth);
+		const reps = Math.max(1, Math.min(3, Math.floor(496 / unitWidth)));
+		const orbitPhrase = baseOrbitUnit.repeat(reps);
+
+		// Closed 360-degree circle path of radius 79 centered at (100, 100)
+		const circlePath = "M 100 21 A 79 79 0 1 1 99.9 21 Z";
+
+		// Calm, smooth spin speed (26s - 38s)
+		const spinDuration = 26 + (originalIndex % 4) * 4;
+		const spinDirection = originalIndex % 2 === 0 ? "normal" : "reverse";
+
 		const inner = (
 			<span className="drift-wall__inner">
-				<img
-					src={item.image}
-					alt={item.title ?? ""}
-					loading="lazy"
-					decoding="async"
-					draggable={false}
-					onError={(e) => {
-						e.currentTarget.src = FALLBACK_CAT_SVG;
-					}}
-				/>
+				{Boolean(item.image) && (
+					<img
+						src={item.image}
+						alt={title || "tile"}
+						loading="lazy"
+						decoding="async"
+						draggable={false}
+						onError={handleImgError}
+					/>
+				)}
 				{item.selected && (
 					<span className="drift-wall__badge" aria-label="Selected">
 						✓
 					</span>
 				)}
-				{item.title && (
-					<span className="drift-wall__caption">
-						<span className="drift-wall__title">{item.title}</span>
-						{item.subtitle && <span className="drift-wall__subtitle">{item.subtitle}</span>}
-					</span>
+				{Boolean(title) && (
+					<svg
+						className="drift-wall__svg-face"
+						viewBox="0 0 200 200"
+						aria-hidden="true"
+						focusable="false"
+					>
+						<defs>
+							<path id={pathId} d={circlePath} fill="none" />
+						</defs>
+						<circle
+							cx="100"
+							cy="100"
+							r="79"
+							fill="none"
+							stroke="rgba(255, 255, 255, 0.07)"
+							strokeWidth="1"
+							strokeDasharray="2 4"
+						/>
+						<g
+							className="drift-wall__orbit-group"
+							style={{
+								animationDuration: `${spinDuration}s`,
+								animationDirection: spinDirection,
+							}}
+						>
+							<text
+								className="drift-wall__arc-text"
+								dominantBaseline="central"
+								textAnchor="start"
+								style={{
+									fontSize: `${descFontSize}px`,
+									letterSpacing: `${descLetterSpacing}px`,
+								}}
+							>
+								<textPath href={`#${pathId}`} startOffset="0%" textAnchor="start">
+									{orbitPhrase}
+								</textPath>
+							</text>
+						</g>
+						<text
+							x="100"
+							y="100"
+							className="drift-wall__center-name"
+							dominantBaseline="central"
+							textAnchor="middle"
+							style={{ fontSize: `${titleFontSize}px` }}
+						>
+							{title}
+						</text>
+					</svg>
 				)}
-				<span className="drift-wall__overlay" aria-hidden="true" />
+				{Boolean(item.image) && <span className="drift-wall__overlay" aria-hidden="true" />}
 			</span>
 		);
 		const commonProps = {
@@ -434,7 +528,14 @@ export const DriftWall = ({
 		};
 		if (item.href) {
 			return (
-				<a key={id} href={item.href} target="_blank" rel="noreferrer noopener" {...commonProps}>
+				<a
+					key={id}
+					href={item.href}
+					target="_blank"
+					rel="noreferrer noopener"
+					aria-label={fullLabel}
+					{...commonProps}
+				>
 					{inner}
 				</a>
 			);
@@ -444,7 +545,7 @@ export const DriftWall = ({
 				key={id}
 				tabIndex={0}
 				role="button"
-				aria-label={item.title ?? "tile"}
+				aria-label={fullLabel}
 				onKeyDown={(e) => {
 					if (e.key === "Enter" || e.key === " ") {
 						e.preventDefault();
@@ -508,5 +609,3 @@ export const DriftWall = ({
 		</div>
 	);
 };
-
-export default DriftWall;
