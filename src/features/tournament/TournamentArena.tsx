@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Clock, Gamepad2, Layers, LogOut, Sparkles, Trophy, Undo2, X } from "lucide-react";
+import { Clock, Gamepad2, Layers, LogOut, Trophy, Undo2, X } from "lucide-react";
 import { type KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, CatImage, ErrorComponent } from "@/shared/components/LayoutBlocks";
@@ -25,13 +25,14 @@ import {
 	STREAK_THRESHOLDS,
 } from "./tournamentEngine";
 
-export interface MatchSideCardProps {
+interface MatchSideCardProps {
 	side: "left" | "right";
 	name: string;
 	img: string | null;
 	heatLevel: HeatLevel | null;
 	streak: number;
 	rating: number;
+	winOdds?: number;
 	isFavored: boolean;
 	isVoting: boolean;
 	isSelected: boolean;
@@ -81,6 +82,7 @@ function ContenderBadges({
 	name,
 	streak,
 	rating,
+	winOdds,
 	isFavored,
 	isRight,
 }: {
@@ -88,6 +90,7 @@ function ContenderBadges({
 	name: string;
 	streak: number;
 	rating: number;
+	winOdds?: number;
 	isFavored: boolean;
 	isRight: boolean;
 }) {
@@ -110,10 +113,18 @@ function ContenderBadges({
 			)}
 
 			<div
-				className={`absolute top-3 sm:top-4 z-20 inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/70 px-2.5 py-1 sm:px-3 sm:py-1.5 text-[10px] font-semibold tracking-wide text-foreground/80 shadow-sm backdrop-blur-md ${ratingSideClass}`}
+				className={`absolute top-3 sm:top-4 z-20 inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-border/50 bg-background/70 px-2.5 py-1 sm:px-3 sm:py-1.5 text-[10px] font-semibold tracking-wide text-foreground/80 shadow-sm backdrop-blur-md ${ratingSideClass}`}
 			>
 				<span className="h-1.5 w-1.5 rounded-full bg-foreground/40" />
 				<span className="font-mono tabular-nums">{Math.round(rating)}</span>
+				{winOdds !== undefined && (
+					<>
+						<span className="h-1 w-1 rounded-full bg-foreground/30" />
+						<span className="font-mono text-muted-foreground tabular-nums">
+							{Math.round(winOdds * 100)}%
+						</span>
+					</>
+				)}
 				{isFavored && (
 					<>
 						<span className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -208,13 +219,14 @@ function ContenderFooter({
 /**
  * Nature-inspired tactile battle card for tournament matchups.
  */
-export const MatchSideCard = memo(function MatchSideCard({
+const MatchSideCard = memo(function MatchSideCard({
 	side,
 	name,
 	img,
 	heatLevel,
 	streak,
 	rating,
+	winOdds,
 	isFavored,
 	isVoting,
 	isSelected,
@@ -279,6 +291,7 @@ export const MatchSideCard = memo(function MatchSideCard({
 						name={name}
 						streak={streak}
 						rating={rating}
+						winOdds={winOdds}
 						isFavored={isFavored}
 						isRight={isRight}
 					/>
@@ -332,7 +345,7 @@ function getStageFlavor(round: number, totalRounds: number): string {
 	return "Bracket Grind";
 }
 
-export function BracketTree({
+function BracketTree({
 	round,
 	totalRounds,
 	onOpenBracket,
@@ -600,8 +613,7 @@ function ContextRibbon({
 	return (
 		<div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
 			<div className="flex flex-wrap items-center gap-2 text-muted-foreground">
-				<span className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-secondary/30 px-2 py-0.5 text-[11px] font-medium text-foreground/80">
-					<Sparkles className="size-3 text-accent" />
+				<span className="inline-flex items-center rounded-full border border-border/40 bg-secondary/30 px-2.5 py-0.5 text-[11px] font-medium text-foreground/80">
 					{matchupTone}
 				</span>
 				<span className="hidden md:inline text-muted-foreground">&middot;</span>
@@ -627,7 +639,7 @@ function ContextRibbon({
 /**
  * Refactored nature-inspired Tournament Header component.
  */
-export const TournamentHeader = memo(function TournamentHeader({
+const TournamentHeader = memo(function TournamentHeader({
 	roundNumber,
 	totalRounds,
 	bracketStage,
@@ -710,7 +722,7 @@ interface TournamentAnnouncementsProps {
 // ⚡ Bolt Performance Optimization: Wrapped TournamentAnnouncements in React.memo()
 // Prevents unnecessary re-renders of complex Framer Motion animations when parent tournament states
 // (like timers or user input events) change without affecting announcement states.
-export const TournamentAnnouncements = memo(function TournamentAnnouncements({
+const TournamentAnnouncements = memo(function TournamentAnnouncements({
 	prefersReducedMotion,
 	openingBracketReveal,
 	openingEntrants,
@@ -942,7 +954,7 @@ interface TournamentCompleteProps {
 	tournamentMode?: TournamentMode;
 }
 
-export function TournamentComplete({
+function TournamentComplete({
 	totalMatches,
 	participantCount,
 	onNewTournament,
@@ -1368,6 +1380,33 @@ function TournamentContent({ onComplete, names = EMPTY_NAMES, onVote }: Tourname
 		? `${roundNumber}-${currentMatchNumber}-${matchData.leftId}-${matchData.rightId}`
 		: `${roundNumber}-${currentMatchNumber}`;
 
+	const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+	const handleTouchStart = (e: React.TouchEvent) => {
+		const touch = e.touches[0];
+		if (touch) {
+			touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+		}
+	};
+
+	const handleTouchEnd = (e: React.TouchEvent) => {
+		const start = touchStartRef.current;
+		const touch = e.changedTouches[0];
+		touchStartRef.current = null;
+		if (!start || !touch || isVoting || openingBracketReveal.value || !matchData) {
+			return;
+		}
+		const dx = touch.clientX - start.x;
+		const dy = touch.clientY - start.y;
+		if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+			if (dx > 0) {
+				handleVoteForSide("left");
+			} else {
+				handleVoteForSide("right");
+			}
+		}
+	};
+
 	const quitTournament = useCallback(() => {
 		handleQuit();
 		tournamentActions.resetTournament();
@@ -1397,17 +1436,17 @@ function TournamentContent({ onComplete, names = EMPTY_NAMES, onVote }: Tourname
 				setIsBracketModalOpen((prev) => !prev);
 				return;
 			}
-			if (key === "arrowleft" || key === "a") {
+			if (key === "arrowleft" || key === "a" || key === "1" || key === "arrowup") {
 				event.preventDefault();
 				handleVoteForSide("left");
 				return;
 			}
-			if (key === "arrowright" || key === "d") {
+			if (key === "arrowright" || key === "d" || key === "2" || key === "arrowdown") {
 				event.preventDefault();
 				handleVoteForSide("right");
 				return;
 			}
-			if ((key === "u" || key === "backspace") && canUndo) {
+			if ((key === "u" || key === "z" || key === "backspace") && canUndo) {
 				event.preventDefault();
 				handleUndo();
 			}
@@ -1470,6 +1509,8 @@ function TournamentContent({ onComplete, names = EMPTY_NAMES, onVote }: Tourname
 	const progressWidth = progress || (currentMatchNumber / totalMatches) * 100;
 	const leftRating = ratings[matchData.leftId] ?? 1500;
 	const rightRating = ratings[matchData.rightId] ?? 1500;
+	const leftWinOdds = 1 / (1 + 10 ** ((rightRating - leftRating) / 400));
+	const rightWinOdds = 1 - leftWinOdds;
 	const ratingGap = Math.abs(leftRating - rightRating);
 	const leftIsFavored = leftRating > rightRating;
 	const rightIsFavored = rightRating > leftRating;
@@ -1543,7 +1584,9 @@ function TournamentContent({ onComplete, names = EMPTY_NAMES, onVote }: Tourname
 								? MOTION_DURATIONS.reducedMotionDuration
 								: MOTION_DURATIONS.moderate,
 						}}
-						className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-stretch gap-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-4 sm:items-center"
+						onTouchStart={handleTouchStart}
+						onTouchEnd={handleTouchEnd}
+						className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-stretch gap-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-4 sm:items-center touch-pan-y"
 					>
 						<MatchSideCard
 							side="left"
@@ -1552,8 +1595,9 @@ function TournamentContent({ onComplete, names = EMPTY_NAMES, onVote }: Tourname
 							heatLevel={leftHeatLevel}
 							streak={leftStreak}
 							rating={leftRating}
+							winOdds={leftWinOdds}
 							isFavored={leftIsFavored}
-							shortcutHint="A / ←"
+							shortcutHint="1 / A / ←"
 							isVoting={isVoting || openingBracketReveal.value}
 							isSelected={selectedSide === "left"}
 							hasSelectionFeedback={hasSelectionFeedback}
@@ -1584,8 +1628,9 @@ function TournamentContent({ onComplete, names = EMPTY_NAMES, onVote }: Tourname
 							heatLevel={rightHeatLevel}
 							streak={rightStreak}
 							rating={rightRating}
+							winOdds={rightWinOdds}
 							isFavored={rightIsFavored}
-							shortcutHint="D / →"
+							shortcutHint="2 / D / →"
 							isVoting={isVoting || openingBracketReveal.value}
 							isSelected={selectedSide === "right"}
 							hasSelectionFeedback={hasSelectionFeedback}

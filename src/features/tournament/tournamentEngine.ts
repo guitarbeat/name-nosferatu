@@ -1,12 +1,7 @@
 import { ELO_RATING } from "@/shared/lib/constants";
-import {
-	applyEloMatchUpdate,
-	calculatePairEloUpdate,
-	getExpectedEloScore,
-	updateEloRating,
-} from "@/shared/lib/elo";
+import { applyEloMatchUpdate, calculatePairEloUpdate, getExpectedEloScore } from "@/shared/lib/elo";
 import { shuffleArray } from "@/shared/lib/utils";
-import type { Match, MatchRecord, NameItem, Team, TeamMatch, TournamentMode } from "@/shared/types";
+import type { Match, MatchRecord, NameItem, Team, TournamentMode } from "@/shared/types";
 
 // ============================================================================
 // ELO RATING SYSTEM HELPERS & CLASSES
@@ -20,23 +15,6 @@ export class EloRating {
 	getExpectedScore(ra: number, rb: number) {
 		return getExpectedEloScore(ra, rb, {
 			ratingDivisor: ELO_RATING.RATING_DIVISOR,
-		});
-	}
-	updateRating(r: number, exp: number, act: number, games = 0) {
-		return updateEloRating({
-			rating: r,
-			expectedScore: exp,
-			actualScore: act,
-			gamesPlayed: games,
-			config: {
-				kFactor: this.kFactor,
-				defaultRating: this.defaultRating,
-				minRating: ELO_RATING.MIN_RATING,
-				maxRating: ELO_RATING.MAX_RATING,
-				ratingDivisor: ELO_RATING.RATING_DIVISOR,
-				newPlayerGameThreshold: ELO_RATING.NEW_PLAYER_GAME_THRESHOLD,
-				newPlayerKMultiplier: ELO_RATING.NEW_PLAYER_K_MULTIPLIER,
-			},
 		});
 	}
 	calculateNewRatings(
@@ -101,51 +79,6 @@ export function generateRandomTeams(participants: Array<{ id: string; name: stri
 	}
 
 	return teams;
-}
-
-export function buildTeamMatches(teams: Team[]): TeamMatch[] {
-	const matches: TeamMatch[] = [];
-	for (let i = 0; i < teams.length - 1; i += 1) {
-		for (let j = i + 1; j < teams.length; j += 1) {
-			const left = teams[i];
-			const right = teams[j];
-			if (!left || !right) {
-				continue;
-			}
-			matches.push({ leftTeamId: left.id, rightTeamId: right.id });
-		}
-	}
-	return matches;
-}
-
-export function applyTeamMatchElo({
-	elo,
-	ratings,
-	leftTeam,
-	rightTeam,
-	winnerSide,
-}: {
-	elo: EloRating;
-	ratings: Record<string, number>;
-	leftTeam: Team;
-	rightTeam: Team;
-	winnerSide: "left" | "right";
-}): Record<string, number> {
-	return applyEloMatchUpdate({
-		ratings,
-		leftParticipantIds: leftTeam.memberIds,
-		rightParticipantIds: rightTeam.memberIds,
-		winnerSide,
-		config: {
-			defaultRating: elo.defaultRating,
-			kFactor: elo.kFactor,
-			minRating: ELO_RATING.MIN_RATING,
-			maxRating: ELO_RATING.MAX_RATING,
-			ratingDivisor: ELO_RATING.RATING_DIVISOR,
-			newPlayerGameThreshold: ELO_RATING.NEW_PLAYER_GAME_THRESHOLD,
-			newPlayerKMultiplier: ELO_RATING.NEW_PLAYER_K_MULTIPLIER,
-		},
-	}).ratings;
 }
 
 export function getBracketStageLabel(round: number, totalRounds: number): string {
@@ -233,7 +166,7 @@ export function getFlameCount(streak: number, max = 8): number {
 // MATCH NORMALIZATION & DATA EXTRACTION (Consolidated from matchHelpers.ts)
 // ============================================================================
 
-export interface NormalizedParticipant {
+interface NormalizedParticipant {
 	id: string;
 	name: string;
 	memberIds: string[];
@@ -314,11 +247,7 @@ export function calculateWinStreak(
 	return streak;
 }
 
-export function getMatchSideName(match: Match, side: "left" | "right"): string {
-	return normalizeParticipant(match[side]).name;
-}
-
-export interface MatchSideData {
+interface MatchSideData {
 	leftId: string;
 	rightId: string;
 	leftName: string;
@@ -364,7 +293,7 @@ export interface HistoryEntry {
 	matchNumber: number;
 }
 
-export interface TournamentMetrics {
+interface TournamentMetrics {
 	totalMatches: number;
 	completedMatches: number;
 	matchNumber: number;
@@ -376,7 +305,7 @@ export interface TournamentMetrics {
 	etaMinutes: number;
 }
 
-export interface BracketDerivation {
+interface BracketDerivation {
 	isComplete: boolean;
 	totalMatches: number;
 	completedMatches: number;

@@ -10,7 +10,7 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/shared/lib/utils";
 
-interface GridBlockProps {
+export interface GridBlockProps {
 	progress: MotionValue<number>;
 	index: number;
 	gridCols: number;

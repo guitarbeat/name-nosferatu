@@ -1,18 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
+import { useReducedMotion } from "framer-motion";
+import { Play, RotateCcw } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo } from "react";
 import { namesQueryOptions, SUPABASE_UNAVAILABLE_MSG } from "@/shared/api";
 import { Button, DriftWall, type DriftWallItem, Loading } from "@/shared/components";
-import { CAT_IMAGES } from "@/shared/lib/constants";
-import { getLockedNames, getVisibleNames, isNameHidden, isNameLocked } from "@/shared/lib/names";
-import { getRandomCatImage } from "@/shared/lib/uiUtils";
-import { hapticNavTap } from "@/shared/lib/utils";
+import {
+	DEFAULT_SAMPLE_NAMES,
+	getLockedNames,
+	getVisibleNames,
+	isNameLocked,
+} from "@/shared/lib/names";
+import { hapticNavTap, hapticTournamentStart } from "@/shared/lib/utils";
 import type { IdType, NameItem } from "@/shared/types";
 import useAppStore from "@/store";
 
 /**
- * Accessible cat name selection powered by 3D Drift Wall.
+ * Accessible cat name contender selection via 3D Drift Wall.
  */
 export const NameSelector = memo(function NameSelector() {
+	const prefersReducedMotion = useReducedMotion() ?? false;
 	const isAdmin = useAppStore((state) => state.user.isAdmin);
 	const storeSelectedNames = useAppStore((state) => state.tournament.selectedNames);
 	const tournamentActions = useAppStore((state) => state.tournamentActions);
@@ -21,32 +27,6 @@ export const NameSelector = memo(function NameSelector() {
 		...namesQueryOptions(isAdmin),
 		retry: 2,
 	});
-
-	const sampleNames = useMemo<NameItem[]>(
-		() => [
-			{ id: "1", name: "Nosferatu", description: "The immortal feline count with shadowy charm" },
-			{ id: "2", name: "Luna", description: "Graceful and mysterious moonlit tabby" },
-			{
-				id: "3",
-				name: "Miso",
-				description: "Sweet and playful companion who purrs like an engine",
-			},
-			{ id: "4", name: "Pixel", description: "Tech-savvy, energetic, and clever troublemaker" },
-			{ id: "5", name: "Saffron", description: "Warm and spicy personality with golden fur" },
-			{ id: "6", name: "Noodle", description: "Long, stretchy acrobatic champion" },
-			{ id: "7", name: "Ziggy", description: "Bold and energetic fearless explorer" },
-			{ id: "8", name: "Whiskers", description: "Classic, timeless, and distinguished gentlegato" },
-			{ id: "9", name: "Pepper", description: "Small but mighty whirlwind of energy" },
-			{
-				id: "10",
-				name: "Shadow",
-				description: "Silent stalker of dust motes and midnight zoomies",
-			},
-			{ id: "11", name: "Milo", description: "Friendly adventurer with curious streak" },
-			{ id: "12", name: "Barnaby", description: "Dignified floof with a heart of gold" },
-		],
-		[],
-	);
 
 	const error =
 		namesQuery.error instanceof Error
@@ -58,7 +38,7 @@ export const NameSelector = memo(function NameSelector() {
 	const names =
 		namesQuery.data?.names && namesQuery.data.names.length > 0
 			? namesQuery.data.names
-			: sampleNames;
+			: DEFAULT_SAMPLE_NAMES;
 	const isLoading = namesQuery.isPending && !namesQuery.data;
 
 	const selectedIds = useMemo(
@@ -66,50 +46,30 @@ export const NameSelector = memo(function NameSelector() {
 		[storeSelectedNames],
 	);
 
-	const { catImageById, namesById } = useMemo(() => {
-		const catImageById = new Map<IdType, string>();
-		const namesById = new Map<IdType, NameItem>();
-
+	const namesById = useMemo(() => {
+		const map = new Map<IdType, NameItem>();
 		for (let i = 0; i < names.length; i++) {
 			const nameItem = names[i];
-			const img = getRandomCatImage(nameItem.id, CAT_IMAGES, nameItem.name);
-			if (img) {
-				catImageById.set(nameItem.id, img);
-			}
-			namesById.set(nameItem.id, nameItem);
+			map.set(nameItem.id, nameItem);
 		}
-		return { catImageById, namesById };
+		return map;
 	}, [names]);
 
 	useEffect(() => {
 		if (names.length === 0) {
 			return;
 		}
+
 		const lockedInNames = getLockedNames(names);
 		if (lockedInNames.length === 0) {
 			return;
 		}
+
 		const missingLocked = lockedInNames.filter((n) => !selectedIds.has(n.id));
 		if (missingLocked.length > 0) {
 			tournamentActions.setSelection([...storeSelectedNames, ...missingLocked]);
 		}
 	}, [names, storeSelectedNames, tournamentActions, selectedIds]);
-
-	// Pre-select 8 candidates on initial load if none are selected yet
-	useEffect(() => {
-		if (storeSelectedNames.length === 0 && names.length >= 8) {
-			const activeCandidates = names.filter((n) => !isNameHidden(n));
-			if (activeCandidates.length >= 2) {
-				tournamentActions.setSelection(
-					activeCandidates.slice(0, Math.min(8, activeCandidates.length)),
-				);
-			}
-		}
-	}, [names, storeSelectedNames.length, tournamentActions]);
-
-	const triggerHaptic = useCallback(() => {
-		hapticNavTap();
-	}, []);
 
 	const handleToggleName = useCallback(
 		(nameId: IdType) => {
@@ -117,15 +77,16 @@ export const NameSelector = memo(function NameSelector() {
 			if (!nameItem || isNameLocked(nameItem)) {
 				return;
 			}
-			triggerHaptic();
 
+			hapticNavTap();
 			const isCurrentlySelected = selectedIds.has(nameId);
 			const nextSelection = isCurrentlySelected
 				? storeSelectedNames.filter((n) => n.id !== nameId)
 				: [...storeSelectedNames, nameItem];
+
 			tournamentActions.setSelection(nextSelection);
 		},
-		[namesById, triggerHaptic, selectedIds, storeSelectedNames, tournamentActions],
+		[namesById, selectedIds, storeSelectedNames, tournamentActions],
 	);
 
 	const availableNames = useMemo(() => getVisibleNames(names), [names]);
@@ -133,22 +94,33 @@ export const NameSelector = memo(function NameSelector() {
 	const driftWallItems = useMemo<DriftWallItem[]>(() => {
 		return availableNames.map((nameItem) => {
 			const isSelected = selectedIds.has(nameItem.id);
-			const catImage =
-				catImageById.get(nameItem.id) ?? getRandomCatImage(nameItem.id, CAT_IMAGES, nameItem.name);
 			const locked = isNameLocked(nameItem);
 			return {
 				id: String(nameItem.id),
-				image: catImage,
 				title: nameItem.name,
-				subtitle: nameItem.pronunciation
-					? `/${nameItem.pronunciation}/`
-					: (nameItem.description ?? undefined),
+				subtitle: nameItem.description
+					? nameItem.description
+					: nameItem.pronunciation
+						? `/${nameItem.pronunciation}/`
+						: undefined,
 				selected: isSelected,
 				locked,
 				onClick: () => handleToggleName(nameItem.id),
 			};
 		});
-	}, [availableNames, selectedIds, catImageById, handleToggleName]);
+	}, [availableNames, selectedIds, handleToggleName]);
+
+	const handleStartTournament = useCallback(() => {
+		hapticTournamentStart();
+		if (storeSelectedNames.length >= 2) {
+			tournamentActions.setNames(storeSelectedNames);
+			window.dispatchEvent(new CustomEvent("nav-tab-change", { detail: "tournament" }));
+			const tournamentEl = document.getElementById("tournament");
+			if (tournamentEl) {
+				tournamentEl.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
+			}
+		}
+	}, [prefersReducedMotion, storeSelectedNames, tournamentActions]);
 
 	if (isLoading) {
 		return (
@@ -180,32 +152,77 @@ export const NameSelector = memo(function NameSelector() {
 	}
 
 	return (
-		<div className="w-full flex flex-col flex-1 min-h-[520px]">
-			{availableNames.length > 0 ? (
-				<DriftWall
-					className="w-screen relative left-[50%] right-[50%] -ml-[50vw] -mr-[50vw] flex-1 min-h-[520px] h-[clamp(520px,72vh,820px)] bg-transparent"
-					items={driftWallItems}
-					tileWidth={200}
-					tileHeight={135}
-					gap={16}
-					tilt={10}
-					turn={-8}
-					perspective={1200}
-					depth={100}
-					speed={35}
-					direction="up"
-					variance={0.3}
-					parallax={0.4}
-					lift={40}
-					fade={0.5}
-					dim={0.5}
-					pauseOnHover={true}
-					overlayColor="transparent"
-				/>
-			) : (
-				<div className="w-full py-16 flex items-center justify-center text-muted-foreground">
-					No names available to display
-				</div>
+		<div className="mx-auto w-full flex flex-col">
+			{availableNames.length > 0 && (
+				<>
+					{/* Header Controls Bar */}
+					<div className="flex items-center justify-between gap-3 px-1 py-1.5 sm:px-2 mb-2">
+						<div className="flex items-center gap-2">
+							<h2 className="font-display text-sm sm:text-base font-bold tracking-tight text-foreground">
+								Choose Contenders
+							</h2>
+							<span className="text-xs text-muted-foreground font-medium">
+								({storeSelectedNames.length} selected)
+							</span>
+						</div>
+
+						<div className="flex items-center gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								size="small"
+								className="h-8 text-xs px-3"
+								onClick={() => {
+									hapticNavTap();
+									tournamentActions.setSelection(
+										storeSelectedNames.length > 0 ? [] : availableNames.slice(0, 8),
+									);
+								}}
+							>
+								<RotateCcw className="size-3.5 mr-1.5" />
+								{storeSelectedNames.length > 0 ? "Clear" : "Select Top 8"}
+							</Button>
+							<Button
+								type="button"
+								variant="primary"
+								size="small"
+								className="h-8 text-xs px-3.5"
+								onClick={handleStartTournament}
+								disabled={storeSelectedNames.length < 2}
+							>
+								<Play className="size-3.5 mr-1.5 fill-current" />
+								Start Tournament
+							</Button>
+						</div>
+					</div>
+
+					{/* Drift Wall Canvas - unboxed, expansive, centered */}
+					<div className="relative min-h-[540px] h-[clamp(540px,72vh,820px)] w-full overflow-hidden">
+						<DriftWall
+							items={driftWallItems}
+							columns={6}
+							tileWidth={156}
+							tileHeight={156}
+							gap={24}
+							radius={9999}
+							tilt={0}
+							turn={0}
+							roll={0}
+							perspective={1200}
+							depth={140}
+							speed={26}
+							direction="up"
+							variance={0.45}
+							parallax={0.6}
+							lift={36}
+							fade={0}
+							dim={0.96}
+							pauseOnHover={true}
+							grayscale={false}
+							className="w-full h-full"
+						/>
+					</div>
+				</>
 			)}
 		</div>
 	);

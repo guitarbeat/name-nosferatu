@@ -1,63 +1,53 @@
 import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { ratingsAPI } from "@/shared/api";
+import { normalizeRatingsWithStats } from "@/shared/lib/names";
 import { fadeMotionPreset } from "@/shared/lib/uiUtils";
+import type { RatingData } from "@/shared/types";
 import useAppStore from "@/store";
 import { NameSelector } from "./NameSelector";
-import { NameSuggestion, NameSuggestionInner } from "./NameSuggestion";
-
-export { NameSelector, NameSuggestion, NameSuggestionInner };
+import { TournamentArena } from "./TournamentArena";
 
 export function TournamentSetup() {
 	const user = useAppStore((s) => s.user);
 	const tournament = useAppStore((s) => s.tournament);
-	const _tournamentActions = useAppStore((s) => s.tournamentActions);
+	const tournamentActions = useAppStore((s) => s.tournamentActions);
 
 	const saveRatingsMutation = useMutation({
-		mutationFn: ({
-			userId,
-			ratings,
-		}: {
-			userId: string;
-			ratings: Record<string, { rating: number; wins: number; losses: number }>;
-		}) => ratingsAPI.saveRatings(userId, ratings),
+		mutationFn: ({ userId, ratings }: { userId: string; ratings: Record<string, RatingData> }) =>
+			ratingsAPI.saveRatings(userId, ratings),
+		onError: (error) => {
+			console.error("Tournament ratings save failed — ratings were not persisted", error);
+		},
 	});
-
-	const mutateAsyncRef = useRef(saveRatingsMutation.mutateAsync);
-	useEffect(() => {
-		mutateAsyncRef.current = saveRatingsMutation.mutateAsync;
-	}, [saveRatingsMutation.mutateAsync]);
 
 	useEffect(() => {
 		if (tournament.isComplete && Object.keys(tournament.ratings).length > 0) {
 			const userId = user.id || user.name || "anonymous";
-
-			const ratingsWithStats: Record<string, { rating: number; wins: number; losses: number }> = {};
-			for (const nameId in tournament.ratings) {
-				if (Object.hasOwn(tournament.ratings, nameId)) {
-					const ratingData = tournament.ratings[nameId];
-					const rating = typeof ratingData === "number" ? ratingData : ratingData.rating;
-					const wins = typeof ratingData === "number" ? 0 : (ratingData.wins ?? 0);
-					const losses = typeof ratingData === "number" ? 0 : (ratingData.losses ?? 0);
-					ratingsWithStats[nameId] = {
-						rating,
-						wins,
-						losses,
-					};
-				}
-			}
-
-			mutateAsyncRef.current({ userId, ratings: ratingsWithStats }).catch((_error) => {
-				console.error("Tournament ratings save failed — ratings were not persisted", _error);
-			});
+			const ratingsWithStats = normalizeRatingsWithStats(tournament.ratings);
+			saveRatingsMutation.mutate({ userId, ratings: ratingsWithStats });
 		}
-	}, [tournament.isComplete, tournament.ratings, user.id, user.name]);
+	}, [tournament.isComplete, tournament.ratings, user.id, user.name, saveRatingsMutation.mutate]);
 
 	return (
 		<div className="w-full flex flex-col flex-1 min-h-[520px] gap-2">
 			<AnimatePresence mode="wait">
-				{!tournament.isComplete && (
+				{tournament.names && tournament.names.length >= 2 && !tournament.isComplete ? (
+					<motion.div
+						key="arena"
+						{...fadeMotionPreset}
+						className="w-full flex flex-col flex-1 min-h-[520px] py-0"
+					>
+						<TournamentArena
+							names={tournament.names}
+							onComplete={(ratings) => {
+								tournamentActions.completeTournament(ratings);
+							}}
+							userName={user.name ?? undefined}
+						/>
+					</motion.div>
+				) : (
 					<motion.div
 						key="setup"
 						{...fadeMotionPreset}
