@@ -79,7 +79,14 @@ export function useAdminDashboard() {
 	);
 
 	const handleFilterChange = useCallback((value: string) => {
-		const option = FILTER_OPTIONS.find((item) => item.value === value);
+		// ⚡ Bolt Performance Optimization: Replace Array.prototype.find with a for-of loop to eliminate callback function allocation
+		let option: (typeof FILTER_OPTIONS)[number] | undefined;
+		for (const item of FILTER_OPTIONS) {
+			if (item.value === value) {
+				option = item;
+				break;
+			}
+		}
 		if (option) {
 			setFilterStatus(option.value);
 		}
