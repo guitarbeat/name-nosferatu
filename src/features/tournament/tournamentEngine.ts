@@ -499,7 +499,13 @@ export function deriveBracketState(
 
 	while (currentRoundEntrants.length > 1) {
 		const winners: string[] = [];
-		const activeRoundSize = currentRoundEntrants.filter((id) => !isBye(id)).length;
+		// ⚡ Bolt Performance Optimization: Replace filter callback and array allocation with a direct loop to count activeRoundSize
+		let activeRoundSize = 0;
+		for (let i = 0; i < currentRoundEntrants.length; i++) {
+			if (!isBye(currentRoundEntrants[i])) {
+				activeRoundSize++;
+			}
+		}
 
 		for (let i = 0; i < currentRoundEntrants.length; i += 2) {
 			const left = currentRoundEntrants[i];
