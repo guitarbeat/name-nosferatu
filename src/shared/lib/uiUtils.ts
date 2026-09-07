@@ -1,4 +1,3 @@
-import type { TargetAndTransition, Transition, Variants } from "framer-motion";
 import { CAT_IMAGES } from "./constants";
 
 // ============================================================================
@@ -132,79 +131,6 @@ export const MOTION_EASING = {
 	easeStandard: "easeOut" as const,
 } as const;
 
-export const MOTION_SPRINGS = {
-	snappy: {
-		type: "spring" as const,
-		stiffness: 400,
-		damping: 25,
-		mass: 0.8,
-	},
-	gentle: {
-		type: "spring" as const,
-		stiffness: 260,
-		damping: 20,
-	},
-	bouncy: {
-		type: "spring" as const,
-		stiffness: 500,
-		damping: 20,
-		mass: 0.8,
-	},
-	tab: {
-		type: "spring" as const,
-		stiffness: 500,
-		damping: 20,
-		mass: 0.8,
-	},
-} as const;
-
-// ============================================================================
-// ACCESSIBLE TRANSITION HELPERS
-// ============================================================================
-
-/**
- * Returns a reduced-motion safe transition config.
- */
-export function getAccessibleTransition(
-	prefersReducedMotion: boolean | null | undefined,
-	standardTransition: Transition,
-): Transition {
-	if (prefersReducedMotion) {
-		return {
-			duration: MOTION_DURATIONS.reducedMotionDuration,
-			ease: "linear",
-		};
-	}
-	return standardTransition;
-}
-
-/**
- * Creates accessible variants where transforms/delays collapse when reduced motion is preferred.
- */
-export function getAccessibleVariants(
-	prefersReducedMotion: boolean | null | undefined,
-	fullVariants: {
-		initial: TargetAndTransition;
-		animate: TargetAndTransition;
-		exit?: TargetAndTransition;
-	},
-): Variants {
-	if (prefersReducedMotion) {
-		return {
-			initial: { opacity: 0 },
-			animate: {
-				opacity: 1,
-				transition: { duration: MOTION_DURATIONS.reducedMotionDuration },
-			},
-			exit: {
-				opacity: 0,
-				transition: { duration: MOTION_DURATIONS.reducedMotionDuration },
-			},
-		};
-	}
-	return fullVariants as Variants;
-}
-
 // ============================================================================
 // CONSOLIDATED FRAMER MOTION VARIANTS & PRESETS
 // ============================================================================
@@ -229,26 +155,6 @@ export const scaleFadeMotionPreset = {
 	},
 };
 
-export const slideUpMotionPreset = {
-	initial: { opacity: 0, y: 16 },
-	animate: { opacity: 1, y: 0 },
-	exit: { opacity: 0, y: -16 },
-	transition: {
-		duration: MOTION_DURATIONS.moderate,
-		ease: MOTION_EASING.easeOutExpo,
-	},
-};
-
-export const slideDownMotionPreset = {
-	initial: { opacity: 0, y: -16, scale: 0.95 },
-	animate: { opacity: 1, y: 0, scale: 1 },
-	exit: { opacity: 0, y: -20, scale: 0.98 },
-	transition: {
-		duration: MOTION_DURATIONS.base,
-		ease: MOTION_EASING.easeOutExpo,
-	},
-};
-
 export const statusMessageMotionPreset = {
 	initial: { opacity: 0, y: -4 },
 	animate: { opacity: 1, y: 0 },
@@ -256,25 +162,5 @@ export const statusMessageMotionPreset = {
 	transition: {
 		duration: MOTION_DURATIONS.fast,
 		ease: MOTION_EASING.easeStandard,
-	},
-};
-
-export const modalBackdropMotionPreset = {
-	initial: { opacity: 0 },
-	animate: { opacity: 1 },
-	exit: { opacity: 0 },
-	transition: {
-		duration: MOTION_DURATIONS.quick,
-		ease: MOTION_EASING.easeInOutSmooth,
-	},
-};
-
-export const modalDialogMotionPreset = {
-	initial: { opacity: 0, scale: 0.95, y: 8 },
-	animate: { opacity: 1, scale: 1, y: 0 },
-	exit: { opacity: 0, scale: 0.96, y: 4 },
-	transition: {
-		duration: MOTION_DURATIONS.base,
-		ease: MOTION_EASING.easeOutExpo,
 	},
 };

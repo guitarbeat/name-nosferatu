@@ -1,0 +1,14 @@
+#!/bin/sh
+# Git pre-commit hook to mechanically enforce folder structure and naming conventions
+
+echo "🔒 [pre-commit] Validating folder structure and naming patterns on staged files..."
+npx tsx scripts/validate-structure.ts --staged
+
+EXIT_CODE=$?
+if [ $EXIT_CODE -ne 0 ]; then
+  echo "❌ [pre-commit] Commit rejected due to folder structure / naming violations."
+  exit 1
+fi
+
+echo "✨ [pre-commit] Structure validation passed."
+exit 0

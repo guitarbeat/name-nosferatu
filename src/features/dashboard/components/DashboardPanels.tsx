@@ -3,6 +3,7 @@ import {
 	Activity,
 	BarChart3,
 	Flame,
+	Shield,
 	Star,
 	Target,
 	TrendingUp,
@@ -11,11 +12,10 @@ import {
 	Users,
 } from "lucide-react";
 import { memo } from "react";
-import { MagicToggle } from "@/components/ui/MagicToggle";
 import type { EngagementMetrics, LeaderboardItem, SiteStats, UserStats } from "@/shared/api";
-import { Button, EmptyState, Loading } from "@/shared/components";
-import { FALLBACK_CAT_SVG } from "@/shared/lib/constants";
+import { Button, EmptyState, Loading, MagicToggle } from "@/shared/components";
 import { MOTION_DURATIONS, MOTION_EASING, themeSurfaces } from "@/shared/lib/uiUtils";
+import { handleImgError } from "@/shared/lib/utils";
 import type { DashboardTimeframe } from "../hooks";
 import type { QuickStat } from "../types";
 import { RatingDistributionChart, RatingRadarChart, TopNamesChart, WinLossChart } from "./Charts";
@@ -112,9 +112,7 @@ export const DashboardHeader = memo(function DashboardHeader({
 									src={avatarUrl}
 									alt={userName}
 									className={`size-16 rounded-full object-cover ring-2 ring-primary/20 ${themeSurfaces.avatar}`}
-									onError={(e) => {
-										e.currentTarget.src = FALLBACK_CAT_SVG;
-									}}
+									onError={handleImgError}
 								/>
 							) : (
 								<div
@@ -124,10 +122,8 @@ export const DashboardHeader = memo(function DashboardHeader({
 								</div>
 							)}
 							{isAdmin && (
-								<div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-gradient-to-br from-yellow-500 to-orange-600 p-1">
-									<div className="rounded-full bg-card p-0.5">
-										<span className="text-xs font-bold">👑</span>
-									</div>
+								<div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-card border border-border/60 p-1 text-primary shadow-xs">
+									<Shield size={12} className="fill-primary/20" />
 								</div>
 							)}
 						</div>
@@ -136,8 +132,8 @@ export const DashboardHeader = memo(function DashboardHeader({
 								Profile
 							</span>
 							<h2 className="mt-2 truncate text-2xl font-semibold text-foreground">{userName}</h2>
-							<p className="mt-1 inline-flex items-center gap-1.5 text-sm text-muted-foreground/75">
-								<span>{isAdmin ? "👤 Administrator" : "🎮 Tournament participant"}</span>
+							<p className="mt-1 inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+								<span>{isAdmin ? "Administrator" : "Tournament participant"}</span>
 							</p>
 						</div>
 					</div>

@@ -2,13 +2,13 @@ import { INDEXED_DB_CONFIG } from "@/shared/lib/constants";
 import type { StoredTournamentSnapshot } from "@/shared/lib/storage";
 
 const DEFAULT_DB_NAME = INDEXED_DB_CONFIG.DB_NAME;
-const DEFAULT_VERSION = INDEXED_DB_CONFIG.DB_VERSION;
+const _DEFAULT_VERSION = INDEXED_DB_CONFIG.DB_VERSION;
 const TOURNAMENT_STORE = INDEXED_DB_CONFIG.STORES.TOURNAMENTS;
-const KEYVAL_STORE = INDEXED_DB_CONFIG.STORES.KEYVAL;
+const _KEYVAL_STORE = INDEXED_DB_CONFIG.STORES.KEYVAL;
 const ACTIVE_TOURNAMENT_KEY = INDEXED_DB_CONFIG.KEYS.ACTIVE_TOURNAMENT;
 
-let cachedDbPromise: Promise<IDBDatabase> | null = null;
-let cachedDbInstance: IDBDatabase | null = null;
+let _cachedDbPromise: Promise<IDBDatabase> | null = null;
+let _cachedDbInstance: IDBDatabase | null = null;
 
 // In-memory fallback store when IndexedDB is unavailable (e.g. SSR, unsupported browsers, private browsing limits, or Node test environments)
 const fallbackMemoryStores = new Map<string, Map<IDBValidKey, unknown>>();
@@ -43,86 +43,10 @@ export function isIndexedDBAvailable(): boolean {
 /**
  * Opens (or returns the cached) connection to the application IndexedDB database.
  */
-export function openDatabase(
-	dbName: string = DEFAULT_DB_NAME,
-	version: number = DEFAULT_VERSION,
-): Promise<IDBDatabase> {
-	if (!isIndexedDBAvailable()) {
-		return Promise.reject(new Error("IndexedDB is not available in this environment."));
-	}
-
-	if (cachedDbInstance) {
-		return Promise.resolve(cachedDbInstance);
-	}
-
-	if (cachedDbPromise) {
-		return cachedDbPromise;
-	}
-
-	cachedDbPromise = new Promise<IDBDatabase>((resolve, reject) => {
-		try {
-			const request = window.indexedDB.open(dbName, version);
-
-			request.onupgradeneeded = (event) => {
-				const db = (event.target as IDBOpenDBRequest).result;
-				if (!db.objectStoreNames.contains(TOURNAMENT_STORE)) {
-					db.createObjectStore(TOURNAMENT_STORE);
-				}
-				if (!db.objectStoreNames.contains(KEYVAL_STORE)) {
-					db.createObjectStore(KEYVAL_STORE);
-				}
-			};
-
-			request.onsuccess = () => {
-				const db = request.result;
-				cachedDbInstance = db;
-
-				db.onclose = () => {
-					cachedDbInstance = null;
-					cachedDbPromise = null;
-				};
-
-				db.onversionchange = () => {
-					db.close();
-					cachedDbInstance = null;
-					cachedDbPromise = null;
-				};
-
-				resolve(db);
-			};
-
-			request.onerror = () => {
-				cachedDbPromise = null;
-				reject(request.error || new Error("Failed to open IndexedDB"));
-			};
-
-			request.onblocked = () => {
-				cachedDbPromise = null;
-				reject(new Error("IndexedDB upgrade blocked by another connection"));
-			};
-		} catch (error) {
-			cachedDbPromise = null;
-			reject(error);
-		}
-	});
-
-	return cachedDbPromise;
-}
 
 /**
  * Closes the active IndexedDB connection and clears cached references.
  */
-export function closeDatabase(): void {
-	if (cachedDbInstance) {
-		try {
-			cachedDbInstance.close();
-		} catch {
-			// Ignore errors on close
-		}
-		cachedDbInstance = null;
-	}
-	cachedDbPromise = null;
-}
 
 /**
  * Resets any in-memory fallback stores (useful for test suites).
@@ -248,70 +172,10 @@ export async function deleteRecordFromDB(
 /**
  * Retrieves all records from an object store.
  */
-export async function getAllRecordsFromDB<T>(
-	storeName: string = TOURNAMENT_STORE,
-	dbName: string = DEFAULT_DB_NAME,
-): Promise<T[]> {
-	if (!isIndexedDBAvailable()) {
-		return Array.from(getMemoryStore(storeName).values()) as T[];
-	}
-
-	try {
-		const db = await openDatabase(dbName);
-		return await new Promise<T[]>((resolve, reject) => {
-			try {
-				const tx = db.transaction(storeName, "readonly");
-				const store = tx.objectStore(storeName);
-				const request = store.getAll();
-
-				request.onsuccess = () => {
-					resolve((request.result as T[]) || []);
-				};
-
-				request.onerror = () => {
-					reject(request.error || new Error(`Failed to getAll from ${storeName}`));
-				};
-			} catch (err) {
-				reject(err);
-			}
-		});
-	} catch {
-		return Array.from(getMemoryStore(storeName).values()) as T[];
-	}
-}
 
 /**
  * Clears all records from an object store.
  */
-export async function clearStoreInDB(
-	storeName: string = TOURNAMENT_STORE,
-	dbName: string = DEFAULT_DB_NAME,
-): Promise<void> {
-	getMemoryStore(storeName).clear();
-
-	if (!isIndexedDBAvailable()) {
-		return;
-	}
-
-	try {
-		const db = await openDatabase(dbName);
-		await new Promise<void>((resolve, reject) => {
-			try {
-				const tx = db.transaction(storeName, "readwrite");
-				const store = tx.objectStore(storeName);
-				store.clear();
-
-				tx.oncomplete = () => resolve();
-				tx.onerror = () => reject(tx.error || new Error("Transaction error"));
-				tx.onabort = () => reject(tx.error || new Error("Transaction aborted"));
-			} catch (err) {
-				reject(err);
-			}
-		});
-	} catch {
-		// Memory store was already cleared
-	}
-}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Dedicated Tournament Persistence Helpers
@@ -348,6 +212,116 @@ export async function clearStoredTournamentFromIDB(
 /**
  * Retrieves all saved tournaments from IndexedDB.
  */
-export async function getAllStoredTournamentsFromIDB(): Promise<StoredTournamentSnapshot[]> {
+
+function openDatabase(dbName: string = DEFAULT_DB_NAME): Promise<IDBDatabase> {
+	if (_cachedDbPromise) {
+		return _cachedDbPromise;
+	}
+
+	_cachedDbPromise = new Promise<IDBDatabase>((resolve, reject) => {
+		try {
+			const request = indexedDB.open(dbName, _DEFAULT_VERSION);
+
+			request.onerror = () => {
+				_cachedDbPromise = null;
+				reject(request.error || new Error("Failed to open IndexedDB"));
+			};
+
+			request.onsuccess = () => {
+				const db = request.result;
+				_cachedDbInstance = db;
+				db.onversionchange = () => {
+					db.close();
+					_cachedDbInstance = null;
+					_cachedDbPromise = null;
+				};
+				resolve(db);
+			};
+
+			request.onupgradeneeded = (event) => {
+				const db = (event.target as IDBOpenDBRequest).result;
+				if (!db.objectStoreNames.contains(TOURNAMENT_STORE)) {
+					db.createObjectStore(TOURNAMENT_STORE, { keyPath: "id" });
+				}
+				if (!db.objectStoreNames.contains(_KEYVAL_STORE)) {
+					db.createObjectStore(_KEYVAL_STORE, { keyPath: "id" });
+				}
+			};
+		} catch (err) {
+			_cachedDbPromise = null;
+			reject(err);
+		}
+	});
+
+	return _cachedDbPromise;
+}
+
+function _closeDatabase(): void {
+	if (_cachedDbInstance) {
+		_cachedDbInstance.close();
+		_cachedDbInstance = null;
+		_cachedDbPromise = null;
+	}
+}
+
+async function getAllRecordsFromDB<T>(
+	storeName: string = TOURNAMENT_STORE,
+	dbName: string = DEFAULT_DB_NAME,
+): Promise<T[]> {
+	if (!isIndexedDBAvailable()) {
+		const memStore = getMemoryStore(storeName);
+		return Array.from(memStore.values()) as T[];
+	}
+
+	try {
+		const db = await openDatabase(dbName);
+		return await new Promise<T[]>((resolve, reject) => {
+			try {
+				const tx = db.transaction(storeName, "readonly");
+				const store = tx.objectStore(storeName);
+				const request = store.getAll();
+
+				request.onsuccess = () => resolve(request.result as T[]);
+				request.onerror = () =>
+					reject(request.error || new Error(`Failed to read all from ${storeName}`));
+			} catch (err) {
+				reject(err);
+			}
+		});
+	} catch {
+		const memStore = getMemoryStore(storeName);
+		return Array.from(memStore.values()) as T[];
+	}
+}
+
+async function _clearStoreInDB(
+	storeName: string = TOURNAMENT_STORE,
+	dbName: string = DEFAULT_DB_NAME,
+): Promise<void> {
+	if (!isIndexedDBAvailable()) {
+		getMemoryStore(storeName).clear();
+		return;
+	}
+
+	try {
+		const db = await openDatabase(dbName);
+		await new Promise<void>((resolve, reject) => {
+			try {
+				const tx = db.transaction(storeName, "readwrite");
+				const store = tx.objectStore(storeName);
+				const request = store.clear();
+
+				request.onsuccess = () => resolve();
+				request.onerror = () => reject(request.error || new Error(`Failed to clear ${storeName}`));
+			} catch (err) {
+				reject(err);
+			}
+		});
+	} catch {
+		getMemoryStore(storeName).clear();
+	}
+}
+
+async function _getAllStoredTournamentsFromIDB(): Promise<StoredTournamentSnapshot[]> {
 	return getAllRecordsFromDB<StoredTournamentSnapshot>(TOURNAMENT_STORE);
 }

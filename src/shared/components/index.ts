@@ -3,7 +3,7 @@ export * from "./FluidGlass";
 export * from "./GlassSurface";
 export * from "./Iridescence";
 export * from "./LayoutBlocks";
-export * from "./ProfileWidget";
+export { MagicProfileWidget, type MagicProfileWidgetProps } from "./ProfileWidget";
 export * from "./ScrollMask";
 export * from "./StaggeredMenu";
 export * from "./TextLoop";

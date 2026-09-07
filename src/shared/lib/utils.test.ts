@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
+import { DEFAULT_SAMPLE_NAMES, getRatingForName, normalizeRatingsWithStats } from "./names";
 import {
 	addManyToSet,
 	addToSet,
 	cn,
 	createSortedKey,
+	handleImgError,
 	hapticNavTap,
 	hapticTournamentStart,
 	hapticVoteTap,
@@ -13,6 +15,51 @@ import {
 } from "./utils";
 
 describe("shared utils", () => {
+	describe("handleImgError", () => {
+		it("replaces broken img src with fallback SVG", () => {
+			const mockImg = { src: "broken.jpg" } as HTMLImageElement;
+			const mockEvent = { currentTarget: mockImg } as unknown as React.SyntheticEvent<
+				HTMLImageElement,
+				Event
+			>;
+			handleImgError(mockEvent);
+			expect(mockImg.src).toContain("data:image/svg+xml");
+		});
+	});
+
+	describe("ratings and names helpers", () => {
+		it("normalizes ratings from mixed inputs", () => {
+			const normalized = normalizeRatingsWithStats({
+				cat1: 1600,
+				cat2: { rating: 1550, wins: 3, losses: 1 },
+			});
+			expect(normalized.cat1).toEqual({ rating: 1600, wins: 0, losses: 0 });
+			expect(normalized.cat2).toEqual({ rating: 1550, wins: 3, losses: 1 });
+		});
+
+		it("gets rating for name by id or name string", () => {
+			const ratings = {
+				"1": { rating: 1600, wins: 2, losses: 0 },
+				Luna: { rating: 1500, wins: 1, losses: 1 },
+			};
+			expect(getRatingForName(ratings, { id: "1", name: "Nosferatu" })).toEqual({
+				rating: 1600,
+				wins: 2,
+				losses: 0,
+			});
+			expect(getRatingForName(ratings, { id: "99", name: "Luna" })).toEqual({
+				rating: 1500,
+				wins: 1,
+				losses: 1,
+			});
+		});
+
+		it("exports default sample names array", () => {
+			expect(DEFAULT_SAMPLE_NAMES.length).toBeGreaterThan(0);
+			expect(DEFAULT_SAMPLE_NAMES[0].name).toBe("Nosferatu");
+		});
+	});
+
 	describe("cn", () => {
 		it("merges class names and handles conditionals", () => {
 			expect(cn("bg-red-500", true && "text-white", false && "hidden")).toBe(

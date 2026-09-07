@@ -77,7 +77,13 @@
 				"noNamespace": "error"
 			},
 			"a11y": {
-				"recommended": false
+				"recommended": false,
+				"useAriaPropsForRole": "error",
+				"useValidAriaProps": "error",
+				"useValidAriaValues": "error",
+				"useAltText": "error",
+				"useHeadingContent": "warn",
+				"useAriaActivedescendantWithTabindex": "warn"
 			},
 			"correctness": {
 				"useExhaustiveDependencies": "warn",
