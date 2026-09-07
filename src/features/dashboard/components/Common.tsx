@@ -168,32 +168,31 @@ export function SectionHeader({
 	);
 }
 
+const TOP_RANK_STYLES: Record<number, { style: string; title: string }> = {
+	1: {
+		style: "border-amber-500/40 bg-amber-500/15 text-amber-300",
+		title: "Rank 1: Champion",
+	},
+	2: {
+		style: "border-slate-300/30 bg-slate-300/10 text-slate-200",
+		title: "Rank 2: Runner-up",
+	},
+	3: {
+		style: "border-amber-700/30 bg-amber-700/15 text-amber-500",
+		title: "Rank 3: Third Place",
+	},
+};
+
 export function RankChip({ rank }: { rank: number }) {
-	if (rank === 1) {
+	const topRank = TOP_RANK_STYLES[rank];
+	if (topRank) {
 		return (
 			<div
-				className="flex size-8 items-center justify-center rounded-lg border border-amber-500/40 bg-amber-500/15 font-mono text-xs font-black text-amber-300 shadow-xs"
-				title="Rank 1: Champion"
-			>
-				<Medal className="size-4" />
-			</div>
-		);
-	}
-	if (rank === 2) {
-		return (
-			<div
-				className="flex size-8 items-center justify-center rounded-lg border border-slate-300/30 bg-slate-300/10 font-mono text-xs font-black text-slate-200 shadow-xs"
-				title="Rank 2: Runner-up"
-			>
-				<Medal className="size-4" />
-			</div>
-		);
-	}
-	if (rank === 3) {
-		return (
-			<div
-				className="flex size-8 items-center justify-center rounded-lg border border-amber-700/30 bg-amber-700/15 font-mono text-xs font-black text-amber-500 shadow-xs"
-				title="Rank 3: Third Place"
+				className={cn(
+					"flex size-8 items-center justify-center rounded-lg border font-mono text-xs font-black shadow-xs",
+					topRank.style,
+				)}
+				title={topRank.title}
 			>
 				<Medal className="size-4" />
 			</div>

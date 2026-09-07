@@ -617,8 +617,8 @@ h3 {
 
 /* TextLoop Animated Ribbon Marquee */
 .text-loop {
-	width: 100%;
 	position: relative;
+	width: 100%;
 	overflow: hidden;
 	display: flex;
 	align-items: center;
@@ -627,25 +627,23 @@ h3 {
 }
 
 .text-loop-svg {
-	width: 100%;
 	display: block;
+	width: 100%;
+	height: auto;
 	overflow: visible;
 }
 
 .text-loop-measure {
 	position: absolute;
 	opacity: 0;
+	visibility: hidden;
 	pointer-events: none;
 	user-select: none;
 }
 
 .text-loop-text {
-	font-family: var(--font-sans);
-	font-weight: 800;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	pointer-events: none;
 	user-select: none;
+	pointer-events: none;
 }
 
 .home-hero-section {
@@ -1263,31 +1261,6 @@ a,
 	outline-offset: 2px;
 }
 
-/* Text Loop (Ribbon) */
-.text-loop {
-	position: relative;
-	width: 100%;
-	min-width: 100%;
-	overflow: hidden;
-}
-
-.text-loop-svg {
-	display: block;
-	width: 100%;
-	min-width: 100%;
-	height: auto;
-	overflow: visible;
-}
-
-.text-loop-text {
-	user-select: none;
-}
-
-.text-loop-measure {
-	visibility: hidden;
-	pointer-events: none;
-}
-
 /* Drift Wall (3D Parallax Gallery) */
 .drift-wall {
 	position: relative;
@@ -1298,25 +1271,23 @@ a,
 	overflow: hidden;
 	perspective: var(--dw-perspective, 1200px);
 	perspective-origin: 50% 50%;
-	--dw-tile-w: 200px;
-	--dw-tile-h: 132px;
-	--dw-gap: 18px;
-	--dw-radius: 14px;
-	--dw-lift: 64px;
-	--dw-dim: 0.55;
+	--dw-tile-w: 134px;
+	--dw-tile-h: 134px;
+	--dw-gap: 20px;
+	--dw-radius: 9999px;
+	--dw-lift: 32px;
+	--dw-dim: 1;
 	--dw-gray: 0;
 	--dw-overlay: #060010;
-	--dw-edge: 55%;
-	-webkit-mask-image: radial-gradient(
-		ellipse 88% 88% at 50% 50%,
-		#000 var(--dw-edge, 55%),
-		transparent 100%
-	);
-	mask-image: radial-gradient(
-		ellipse 88% 88% at 50% 50%,
-		#000 var(--dw-edge, 55%),
-		transparent 100%
-	);
+	--dw-edge: 100%;
+	-webkit-mask-image:
+		linear-gradient(to bottom, transparent 0%, #000 8%, #000 92%, transparent 100%),
+		linear-gradient(to right, transparent 0%, #000 3%, #000 97%, transparent 100%);
+	-webkit-mask-composite: source-in;
+	mask-image:
+		linear-gradient(to bottom, transparent 0%, #000 8%, #000 92%, transparent 100%),
+		linear-gradient(to right, transparent 0%, #000 3%, #000 97%, transparent 100%);
+	mask-composite: intersect;
 }
 
 .drift-wall__plane {
@@ -1353,6 +1324,7 @@ a,
 	flex: 0 0 auto;
 	outline: none;
 	transform-style: preserve-3d;
+	cursor: pointer;
 }
 
 .drift-wall__inner {
@@ -1361,14 +1333,20 @@ a,
 	display: block;
 	border-radius: var(--dw-radius);
 	overflow: hidden;
-	background: #0b0b12;
+	background:
+		radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.05) 0%, transparent 60%),
+		var(--card, hsl(30deg 14% 12%));
+	border: 1px solid var(--border, hsl(30deg 12% 26%));
+	box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.4);
 	opacity: var(--dw-dim);
 	transform: translateZ(0);
 	pointer-events: none;
 	transition:
-		transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-		opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-		box-shadow 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+		transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+		opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+		box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+		border-color 0.25s ease,
+		background 0.25s ease;
 }
 
 .drift-wall__tile img {
@@ -1393,65 +1371,206 @@ a,
 
 .drift-wall__caption {
 	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	padding: 8px 10px;
-	background: linear-gradient(
-		to top,
-		rgba(0, 0, 0, 0.9) 0%,
-		rgba(0, 0, 0, 0.45) 70%,
-		transparent 100%
-	);
+	inset: 0;
+	padding: 14px 10px 10px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	justify-content: center;
 	text-align: center;
 	pointer-events: none;
 	z-index: 2;
 }
 
+.drift-wall__inner:has(img) .drift-wall__caption {
+	background: radial-gradient(
+		ellipse 85% 85% at 50% 50%,
+		rgba(0, 0, 0, 0.72) 0%,
+		rgba(0, 0, 0, 0.5) 60%,
+		rgba(0, 0, 0, 0.65) 100%
+	);
+}
+
 .drift-wall__title {
-	color: #ffffff;
-	font-weight: 800;
-	font-size: 15px;
+	color: var(--foreground, #ffffff);
+	font-family: var(--font-display, var(--font-sans, inherit));
+	font-weight: 700;
+	font-size: 11.5px;
 	line-height: 1.2;
-	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
 	letter-spacing: 0.03em;
 	text-transform: uppercase;
+	max-width: 94%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .drift-wall__subtitle {
-	color: rgba(255, 255, 255, 0.8);
-	font-size: 10px;
+	color: var(--muted-foreground, rgba(255, 255, 255, 0.7));
+	font-size: 9px;
+	font-weight: 500;
+	letter-spacing: 0.01em;
+	margin-top: 3px;
+	max-width: 86%;
+	line-height: 1.25;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: normal;
+}
+
+.drift-wall__svg-face {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	user-select: none;
+	overflow: visible;
+	z-index: 2;
+}
+
+@keyframes drift-wall-orbit-spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.drift-wall__orbit-group {
+	transform-box: view-box;
+	transform-origin: 100px 100px;
+	animation-name: drift-wall-orbit-spin;
+	animation-timing-function: linear;
+	animation-iteration-count: infinite;
+	will-change: transform;
+}
+
+.drift-wall__tile:hover .drift-wall__orbit-group,
+.drift-wall__tile:focus-visible .drift-wall__orbit-group {
+	animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.drift-wall__orbit-group {
+		animation: none;
+	}
+}
+
+.drift-wall__arc-text {
+	fill: #ffffff;
+	font-family: var(
+		--font-sans,
+		system-ui,
+		-apple-system,
+		BlinkMacSystemFont,
+		"Segoe UI",
+		Roboto,
+		sans-serif
+	);
 	font-weight: 600;
-	letter-spacing: 0.05em;
-	margin-top: 2px;
+	letter-spacing: 0.04em;
+	pointer-events: none;
+	user-select: none;
+	dominant-baseline: central;
+	text-anchor: start;
+	filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9));
+	transition:
+		fill 0.25s ease,
+		filter 0.25s ease;
+}
+
+.drift-wall__center-name {
+	fill: #ffffff;
+	font-family: var(
+		--font-sans,
+		system-ui,
+		-apple-system,
+		BlinkMacSystemFont,
+		"Segoe UI",
+		Roboto,
+		sans-serif
+	);
+	font-weight: 800;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	pointer-events: none;
+	user-select: none;
+	dominant-baseline: central;
+	text-anchor: middle;
+	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.95));
+	transition:
+		fill 0.25s ease,
+		filter 0.25s ease,
+		transform 0.25s ease;
+}
+
+.drift-wall__tile:hover .drift-wall__arc-text,
+.drift-wall__tile.is-active .drift-wall__arc-text,
+.drift-wall__tile.is-selected .drift-wall__arc-text {
+	fill: #ffffff;
+	filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 1));
+}
+
+.drift-wall__tile:hover .drift-wall__center-name,
+.drift-wall__tile.is-active .drift-wall__center-name,
+.drift-wall__tile.is-selected .drift-wall__center-name {
+	fill: #ffffff;
+	filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 1));
 }
 
 .drift-wall__badge {
 	position: absolute;
-	top: 8px;
-	right: 8px;
+	bottom: 12px;
+	left: 50%;
+	transform: translateX(-50%);
 	z-index: 3;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 24px;
-	height: 24px;
+	width: 18px;
+	height: 18px;
 	border-radius: 9999px;
-	background: hsl(var(--primary, 220 90% 56%));
-	color: #ffffff;
-	font-size: 12px;
-	font-weight: bold;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+	background: var(--primary, hsl(152 26% 42%));
+	color: var(--primary-foreground, #ffffff);
+	font-size: 10px;
+	font-weight: 800;
+	line-height: 1;
+	box-shadow:
+		0 2px 6px rgba(0, 0, 0, 0.45),
+		0 0 0 1.5px rgba(255, 255, 255, 0.25);
+}
+
+.drift-wall__tile:hover .drift-wall__inner {
+	border-color: color-mix(in srgb, var(--primary, hsl(152 26% 42%)) 65%, transparent);
+	transform: translateZ(var(--dw-lift, 24px)) scale(1.04);
+	box-shadow:
+		0 12px 28px -6px rgba(0, 0, 0, 0.6),
+		0 0 16px color-mix(in srgb, var(--primary, hsl(152 26% 42%)) 20%, transparent);
+}
+
+.drift-wall__tile.is-selected .drift-wall__inner {
+	border-color: var(--primary, hsl(152 26% 42%));
+	background: radial-gradient(
+		circle at 50% 35%,
+		color-mix(in srgb, var(--primary, hsl(152 26% 42%)) 22%, var(--card, hsl(30deg 14% 12%))) 0%,
+		var(--card, hsl(30deg 14% 12%)) 100%
+	);
+	box-shadow:
+		0 12px 32px -6px rgba(0, 0, 0, 0.6),
+		0 0 0 2px color-mix(in srgb, var(--primary, hsl(152 26% 42%)) 60%, transparent),
+		0 0 20px color-mix(in srgb, var(--primary, hsl(152 26% 42%)) 25%, transparent);
 }
 
 .drift-wall__tile.is-active .drift-wall__inner,
 .drift-wall__tile:focus-visible .drift-wall__inner {
 	opacity: 1;
-	transform: translateZ(var(--dw-lift));
-	box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.7);
+	transform: translateZ(var(--dw-lift, 32px)) scale(1.05);
+	box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.7);
 }
 
 .drift-wall__tile.is-active img,
@@ -1467,7 +1586,7 @@ a,
 .drift-wall__tile:focus-visible .drift-wall__inner {
 	box-shadow:
 		0 24px 60px -18px rgba(0, 0, 0, 0.7),
-		0 0 0 2px rgba(255, 255, 255, 0.9);
+		0 0 0 2px var(--foreground, #ffffff);
 }
 
 @media (prefers-reduced-motion: reduce) {

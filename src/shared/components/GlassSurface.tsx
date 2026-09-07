@@ -301,6 +301,3 @@ export function GlassSurface({
 		</div>
 	);
 }
-
-export const LiquidGlass = GlassSurface;
-export default GlassSurface;

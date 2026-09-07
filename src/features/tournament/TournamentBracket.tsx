@@ -30,7 +30,7 @@ import {
 // TYPES & INTERFACES FOR VISUAL BRACKET
 // ============================================================================
 
-export interface VisualContender {
+interface VisualContender {
 	id: string;
 	name: string;
 	isBye: boolean;
@@ -46,7 +46,7 @@ export interface VisualContender {
 	streak?: number;
 }
 
-export interface VisualMatch {
+interface VisualMatch {
 	id: string; // e.g. "r1-m0"
 	overallMatchNumber?: number; // 1-based order in the tournament sequence
 	roundNumber: number; // 1-based round index
@@ -64,7 +64,7 @@ export interface VisualMatch {
 	targetSlot?: 0 | 1; // top or bottom slot in next match
 }
 
-export interface VisualRound {
+interface VisualRound {
 	roundNumber: number;
 	roundName: string;
 	matches: VisualMatch[];
@@ -72,7 +72,7 @@ export interface VisualRound {
 	isCompleted: boolean;
 }
 
-export interface VisualBracketTree {
+interface VisualBracketTree {
 	rounds: VisualRound[];
 	champion: VisualContender | null;
 	totalEntrants: number;
@@ -82,7 +82,7 @@ export interface VisualBracketTree {
 	activeMatch: VisualMatch | null;
 }
 
-export interface TournamentBracketProps {
+interface TournamentBracketProps {
 	bracketEntrants?: string[];
 	matchHistory?: MatchRecord[];
 	currentMatch?: Match | null;
@@ -1562,7 +1562,7 @@ export function TournamentBracket({
 // MODAL WRAPPER FOR POPUP BRACKET VIEWER
 // ============================================================================
 
-export interface TournamentBracketModalProps extends TournamentBracketProps {
+interface TournamentBracketModalProps extends TournamentBracketProps {
 	isOpen: boolean;
 	onClose: () => void;
 }

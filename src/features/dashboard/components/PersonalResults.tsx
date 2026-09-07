@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Check, Copy, Crown, Trophy } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 import { Button } from "@/shared/components";
+import { getRatingForName } from "@/shared/lib/names";
 import { cn, ErrorManager } from "@/shared/lib/utils";
 import type { NameItem, RatingData } from "@/shared/types";
 import { RankingAdjustment } from "./RankingAdjustment";
@@ -17,6 +18,12 @@ interface PersonalResultsProps {
 	) => void;
 	userName: string;
 }
+
+const PODIUM_TIERS = [
+	{ label: "1st Place", borderTone: "border-yellow-500/50 bg-yellow-500/10" },
+	{ label: "2nd Place", borderTone: "border-slate-400/40 bg-slate-400/10" },
+	{ label: "3rd Place", borderTone: "border-amber-700/40 bg-amber-700/10" },
+] as const;
 
 // ⚡ Bolt Performance Optimization: Wrapped PersonalResults in React.memo()
 // Prevents unnecessary re-renders when parent states in AnalyticsDashboard change
@@ -36,10 +43,7 @@ export const PersonalResults = memo(function PersonalResults({
 
 		return currentTournamentNames
 			.map((name) => {
-				const pr =
-					personalRatings[name.id] ??
-					personalRatings[String(name.id)] ??
-					personalRatings[name.name];
+				const pr = getRatingForName(personalRatings, name);
 				if (!pr) {
 					return null;
 				}
@@ -211,26 +215,19 @@ export const PersonalResults = memo(function PersonalResults({
 					{/* Top 3 Podium Cards */}
 					<div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
 						{topThree.map((cat, idx) => {
-							const medal =
-								idx === 0 ? "🥇 1st Place" : idx === 1 ? "🥈 2nd Place" : "🥉 3rd Place";
-							const borderTone =
-								idx === 0
-									? "border-yellow-500/50 bg-yellow-500/10"
-									: idx === 1
-										? "border-slate-400/40 bg-slate-400/10"
-										: "border-amber-700/40 bg-amber-700/10";
+							const tier = PODIUM_TIERS[idx] ?? PODIUM_TIERS[2];
 
 							return (
 								<div
 									key={cat.id || cat.name}
 									className={cn(
 										"flex flex-col justify-between p-4 rounded-xl border transition-all",
-										borderTone,
+										tier.borderTone,
 									)}
 								>
 									<div className="flex items-center justify-between gap-2 mb-2">
 										<span className="text-xs font-bold uppercase tracking-wider text-foreground">
-											{medal}
+											{tier.label}
 										</span>
 										<span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/20 text-primary text-xs font-extrabold tabular-nums">
 											{Math.round(cat.rating as number)}
