@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Clock, Gamepad2, Layers, LogOut, Trophy, Undo2, X } from "lucide-react";
 import { type KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/app/Providers";
 import { Button, CatImage, ErrorComponent } from "@/shared/components/LayoutBlocks";
 import { CAT_IMAGES } from "@/shared/lib/constants";
 import { getVisibleNames } from "@/shared/lib/names";
@@ -1126,6 +1127,7 @@ const EMPTY_NAMES: NameItem[] = [];
 
 function TournamentContent({ onComplete, names = EMPTY_NAMES, onVote }: TournamentProps) {
 	const navigate = useNavigate();
+	const toast = useToast();
 	const userName = useAppStore((state) => state.user.name);
 	const tournamentActions = useAppStore((state) => state.tournamentActions);
 	const visibleNames = useMemo(() => getVisibleNames(names), [names]);
@@ -1212,9 +1214,10 @@ function TournamentContent({ onComplete, names = EMPTY_NAMES, onVote }: Tourname
 				);
 			} catch (error) {
 				console.warn("Tournament vote callback did not persist:", error);
+				toast.showError("Tournament vote did not save. Please check your connection.");
 			}
 		},
-		[onVote, currentMatch, ratings],
+		[onVote, currentMatch, ratings, toast],
 	);
 
 	const completionHandledRef = useRef(false);
