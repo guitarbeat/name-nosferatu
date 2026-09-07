@@ -440,9 +440,10 @@ function padForRound(entrants: string[], round: number): string[] {
 
 export function createIdToNameMap(names: NameItem[]): Map<string, NameItem> {
 	const map = new Map<string, NameItem>();
-	names.forEach((n) => {
+	// ⚡ Bolt Performance Optimization: Replace callback-based forEach with native for..of loop
+	for (const n of names) {
 		map.set(String(n.id), n);
-	});
+	}
 	return map;
 }
 
