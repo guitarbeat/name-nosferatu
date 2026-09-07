@@ -3,6 +3,8 @@ export * from "./FluidGlass";
 export * from "./GlassSurface";
 export * from "./Iridescence";
 export * from "./LayoutBlocks";
+export * from "./MagicAvatarPicker";
+export * from "./MagicInput";
 export * from "./ScrollMask";
 export * from "./StaggeredMenu";
 export * from "./TextLoop";
