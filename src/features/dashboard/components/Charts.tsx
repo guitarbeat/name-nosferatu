@@ -58,6 +58,16 @@ export const CHART_TOOLTIP_STYLE = {
 
 export const CHART_CURSOR = { fill: "var(--chart-cursor-fill)" } as const;
 
+export const COMMON_AXIS_PROPS = {
+	tick: { fontSize: 10, fill: CHART_TEXT_MUTED },
+	axisLine: false,
+	tickLine: false,
+} as const;
+
+export function truncateChartLabel(name: string, maxLen: number): string {
+	return name.length > maxLen ? `${name.slice(0, maxLen - 1)}…` : name;
+}
+
 export const BUCKET_SIZE = 25;
 
 /* ==========================================================================
@@ -72,7 +82,7 @@ export const PopularNamingTrendsChart = memo(function PopularNamingTrendsChart({
 		return leaderboard
 			.filter((e) => e.total_ratings > 0)
 			.map((e) => ({
-				name: e.name.length > 12 ? `${e.name.slice(0, 11)}…` : e.name,
+				name: truncateChartLabel(e.name, 12),
 				popularity: e.total_ratings,
 				rating: Math.round(e.avg_rating),
 				wins: e.wins,
@@ -94,9 +104,7 @@ export const PopularNamingTrendsChart = memo(function PopularNamingTrendsChart({
 					type="number"
 					dataKey="popularity"
 					name="Matches Played"
-					tick={{ fontSize: 10, fill: CHART_TEXT_MUTED }}
-					axisLine={false}
-					tickLine={false}
+					{...COMMON_AXIS_PROPS}
 					label={{
 						value: "Total Matches Played",
 						position: "insideBottom",
@@ -109,9 +117,7 @@ export const PopularNamingTrendsChart = memo(function PopularNamingTrendsChart({
 					type="number"
 					dataKey="rating"
 					name="Average Rating"
-					tick={{ fontSize: 10, fill: CHART_TEXT_MUTED }}
-					axisLine={false}
-					tickLine={false}
+					{...COMMON_AXIS_PROPS}
 					domain={["dataMin - 15", "dataMax + 15"]}
 					label={{
 						value: "Rating",
@@ -400,7 +406,7 @@ export const RatingRadarChart = memo(function RatingRadarChart({
 		for (let i = 0; i < top.length; i++) {
 			const e = top[i];
 			chartData[i] = {
-				name: e.name.length > 10 ? `${e.name.slice(0, 9)}…` : e.name,
+				name: truncateChartLabel(e.name, 10),
 				rating: Math.round((e.avg_rating / maxRating) * 100),
 				wins: Math.round((e.wins / maxWins) * 100),
 				activity: Math.round((e.total_ratings / maxTotal) * 100),
@@ -481,7 +487,7 @@ export const TopNamesChart = memo(function TopNamesChart({
 			ratings[i] = entry.avg_rating;
 			if (i < chartLimit) {
 				chartData[i] = {
-					name: entry.name.length > 10 ? `${entry.name.slice(0, 9)}…` : entry.name,
+					name: truncateChartLabel(entry.name, 10),
 					rating: Math.round(entry.avg_rating),
 					fullName: entry.name,
 					percentile: entry.percentile_rank ?? null,
@@ -502,13 +508,7 @@ export const TopNamesChart = memo(function TopNamesChart({
 		<ChartFrame>
 			<BarChart data={data} layout="vertical" margin={{ top: 8, right: 16, left: 4, bottom: 8 }}>
 				<CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} horizontal={false} />
-				<XAxis
-					type="number"
-					tick={{ fontSize: 10, fill: CHART_TEXT_MUTED }}
-					axisLine={false}
-					tickLine={false}
-					domain={["dataMin - 50", "dataMax + 20"]}
-				/>
+				<XAxis type="number" {...COMMON_AXIS_PROPS} domain={["dataMin - 50", "dataMax + 20"]} />
 				<YAxis
 					dataKey="name"
 					type="category"
@@ -577,7 +577,7 @@ export const WinLossChart = memo(function WinLossChart({
 				const losses = e.losses ?? 0;
 				if (wins + losses > 0) {
 					result.push({
-						name: e.name.length > 8 ? `${e.name.slice(0, 7)}…` : e.name,
+						name: truncateChartLabel(e.name, 8),
 						wins,
 						losses,
 					});
@@ -607,18 +607,8 @@ export const WinLossChart = memo(function WinLossChart({
 		<ChartFrame>
 			<BarChart data={data} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
 				<CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
-				<XAxis
-					dataKey="name"
-					tick={{ fontSize: 10, fill: CHART_TEXT_MUTED }}
-					axisLine={{ stroke: CHART_GRID }}
-					tickLine={false}
-				/>
-				<YAxis
-					allowDecimals={false}
-					tick={{ fontSize: 10, fill: CHART_TEXT_MUTED }}
-					axisLine={false}
-					tickLine={false}
-				/>
+				<XAxis dataKey="name" {...COMMON_AXIS_PROPS} axisLine={{ stroke: CHART_GRID }} />
+				<YAxis allowDecimals={false} {...COMMON_AXIS_PROPS} />
 				<Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={CHART_CURSOR} />
 				<Legend wrapperStyle={{ fontSize: 11, color: CHART_TEXT_MUTED }} />
 				<Bar

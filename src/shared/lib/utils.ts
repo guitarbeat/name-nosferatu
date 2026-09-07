@@ -1,5 +1,4 @@
 import { type ClassValue, clsx } from "clsx";
-import { type ComponentType, lazy } from "react";
 import { twMerge } from "tailwind-merge";
 import { FALLBACK_CAT_IMAGE, FALLBACK_CAT_SVG } from "@/shared/lib/constants";
 
@@ -103,27 +102,15 @@ export function hapticTournamentStart(): void {
 }
 
 /**
- * Robust lazy import helper that automatically retries/reloads once if dynamic chunk loading fails (e.g. after server restart or redeploy).
+ * React image onError fallback handler to replace broken images with consistent fallback SVG.
  */
-export function safeLazy<T extends ComponentType<unknown>>(
-	importFn: () => Promise<{ default: T }>,
-) {
-	return lazy(async () => {
-		try {
-			return await importFn();
-		} catch (error) {
-			const key = "app_chunk_load_retry";
-			if (typeof window !== "undefined" && typeof sessionStorage !== "undefined") {
-				const lastReload = sessionStorage.getItem(key);
-				const now = Date.now();
-				if (!lastReload || now - Number(lastReload) > 15000) {
-					sessionStorage.setItem(key, String(now));
-					window.location.reload();
-				}
-			}
-			throw error;
-		}
-	});
+export function handleImgError(
+	e: React.SyntheticEvent<HTMLImageElement, Event>,
+	fallbackSrc: string = FALLBACK_CAT_SVG,
+): void {
+	if (e.currentTarget.src !== fallbackSrc) {
+		e.currentTarget.src = fallbackSrc;
+	}
 }
 
 /**

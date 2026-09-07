@@ -1,4 +1,3 @@
-import DOMPurify from "dompurify";
 import {
 	type KeyboardEvent,
 	useCallback,
@@ -9,7 +8,7 @@ import {
 	useState,
 } from "react";
 import { useToast } from "@/app/Providers";
-import { addName, ratingsAPI } from "@/shared/api";
+import { ratingsAPI } from "@/shared/api";
 import { useIndexedDB, useLocalStorage, useTournamentIndexedDB } from "@/shared/hooks";
 import { ELO_RATING, TIMING } from "@/shared/lib/constants";
 import { createSortedKey, shuffleArray } from "@/shared/lib/utils";
@@ -44,8 +43,6 @@ import {
 // ============================================================================
 // 1. useTimedState Hook (Consolidated from useTimedState.ts)
 // ============================================================================
-
-const EMPTY_OPTIONS: Record<string, never> = {};
 
 export function useTimedState<T>(defaultValue: T) {
 	const [value, setValue] = useState<T>(defaultValue);
@@ -188,258 +185,7 @@ export function useTournamentKeyboard({
 }
 
 // ============================================================================
-// 4. useNameSuggestion Hook (Consolidated from useNameSuggestion.ts)
-// ============================================================================
-
-interface UseNameSuggestionProps {
-	onSuccess?: () => void;
-}
-
-interface UseNameSuggestionResult {
-	values: { name: string; description: string };
-	errors: { name?: string; description?: string };
-	touched: { name?: boolean; description?: boolean };
-	isSubmitting: boolean;
-	isValid: boolean;
-	handleChange: (field: "name" | "description", value: string) => void;
-	handleBlur: (field: "name" | "description") => void;
-	handleSubmit: () => Promise<void>;
-	reset: () => void;
-	globalError: string;
-	successMessage: string;
-	setGlobalError: (error: string) => void;
-}
-
-export function useNameSuggestion(
-	props: UseNameSuggestionProps = EMPTY_OPTIONS,
-): UseNameSuggestionResult {
-	const [values, setValues] = useState({ name: "", description: "" });
-	const [errors, setErrors] = useState<{ name?: string; description?: string }>({});
-	const [touched, setTouched] = useState<{
-		name?: boolean;
-		description?: boolean;
-	}>({});
-	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [globalError, setGlobalError] = useState("");
-	const [successMessage, setSuccessMessage] = useState("");
-
-	const handleChange = useCallback((field: "name" | "description", value: string) => {
-		setValues((previous) => ({ ...previous, [field]: value }));
-		setErrors((previous) => ({ ...previous, [field]: undefined }));
-		setGlobalError("");
-	}, []);
-
-	const handleBlur = useCallback((field: "name" | "description") => {
-		setTouched((previous) => ({ ...previous, [field]: true }));
-	}, []);
-
-	const validate = useCallback(() => {
-		const nextErrors: { name?: string; description?: string } = {};
-
-		if (!values.name.trim()) {
-			nextErrors.name = "Name is required";
-		}
-		if (!values.description.trim()) {
-			nextErrors.description = "Description is required";
-		}
-
-		setErrors(nextErrors);
-		return Object.keys(nextErrors).length === 0;
-	}, [values]);
-
-	const handleSubmit = useCallback(async () => {
-		if (!validate()) {
-			return;
-		}
-
-		setIsSubmitting(true);
-		setGlobalError("");
-		setSuccessMessage("");
-
-		try {
-			const sanitizedName = DOMPurify.sanitize(values.name, {
-				ALLOWED_TAGS: [],
-			}).trim();
-			const sanitizedDescription = DOMPurify.sanitize(values.description, {
-				ALLOWED_TAGS: [],
-			}).trim();
-
-			await addName({ name: sanitizedName, description: sanitizedDescription });
-
-			setSuccessMessage("Name suggestion submitted successfully!");
-			setValues({ name: "", description: "" });
-			setTouched({});
-			props.onSuccess?.();
-		} catch (submitError) {
-			setGlobalError(
-				submitError instanceof Error ? submitError.message : "Failed to submit suggestion",
-			);
-		} finally {
-			setIsSubmitting(false);
-		}
-	}, [props, validate, values.description, values.name]);
-
-	const reset = useCallback(() => {
-		setValues({ name: "", description: "" });
-		setErrors({});
-		setTouched({});
-		setGlobalError("");
-		setSuccessMessage("");
-	}, []);
-
-	const isValid = !errors.name && !errors.description && values.name.trim() !== "";
-
-	return {
-		values,
-		errors,
-		touched,
-		isSubmitting,
-		isValid,
-		handleChange,
-		handleBlur,
-		handleSubmit,
-		reset,
-		globalError,
-		successMessage,
-		setGlobalError,
-	};
-}
-
-// ============================================================================
-// 5. useTournamentRealtime Hook & WebSocket Service (Consolidated from useTournamentRealtime.ts)
-// ============================================================================
-
-export interface TournamentUpdate {
-	tournamentId: string;
-	round: number;
-	matchNumber: number;
-	currentMatch: {
-		leftId: string | null;
-		rightId: string | null;
-	};
-	status: "in_progress" | "completed";
-}
-
-export interface MatchResult {
-	tournamentId: string;
-	matchId: string;
-	winnerId: string;
-	loserId: string;
-	newRatings: Record<string, number>;
-}
-
-export interface UserActivity {
-	userId: string;
-	action: "joined" | "left";
-	timestamp: number;
-}
-
-class TournamentRealtimeService {
-	subscribeToTournament(
-		_tournamentId: string,
-		_callback: (update: TournamentUpdate) => void,
-	): () => void {
-		return () => {
-			/* no-op realtime subscription */
-		};
-	}
-	subscribeToMatches(_callback: (result: MatchResult) => void): () => void {
-		return () => {
-			/* no-op match subscription */
-		};
-	}
-	subscribeToUserActivity(_callback: (activity: UserActivity) => void): () => void {
-		return () => {
-			/* no-op user activity subscription */
-		};
-	}
-	cleanup(): void {
-		/* no-op */
-	}
-	acquire(): void {
-		/* no-op */
-	}
-	release(): void {
-		/* no-op */
-	}
-}
-let serviceInstance: TournamentRealtimeService | null = null;
-
-function getTournamentRealtimeService(): TournamentRealtimeService {
-	if (!serviceInstance) {
-		serviceInstance = new TournamentRealtimeService();
-	}
-	return serviceInstance;
-}
-
-interface UseTournamentRealtimeOptions {
-	autoConnect?: boolean;
-}
-
-export function useTournamentRealtime(options: UseTournamentRealtimeOptions = EMPTY_OPTIONS) {
-	const serviceRef = useRef<TournamentRealtimeService | null>(null);
-
-	useEffect(() => {
-		if (!serviceRef.current) {
-			serviceRef.current = getTournamentRealtimeService();
-		}
-
-		if (options.autoConnect) {
-			serviceRef.current.acquire();
-		}
-
-		return () => {
-			if (options.autoConnect) {
-				serviceRef.current?.release();
-			}
-			serviceRef.current = null;
-		};
-	}, [options.autoConnect]);
-
-	const subscribeToTournament = useCallback(
-		(tournamentId: string, callback: (update: TournamentUpdate) => void) => {
-			return (
-				serviceRef.current?.subscribeToTournament(tournamentId, callback) ??
-				(() => {
-					/* no-op */
-				})
-			);
-		},
-		[],
-	);
-
-	const subscribeToMatches = useCallback((callback: (result: MatchResult) => void) => {
-		return (
-			serviceRef.current?.subscribeToMatches(callback) ??
-			(() => {
-				/* no-op */
-			})
-		);
-	}, []);
-
-	const subscribeToUserActivity = useCallback((callback: (activity: UserActivity) => void) => {
-		return (
-			serviceRef.current?.subscribeToUserActivity(callback) ??
-			(() => {
-				/* no-op */
-			})
-		);
-	}, []);
-
-	const cleanup = useCallback(() => {
-		serviceRef.current?.cleanup();
-	}, []);
-
-	return {
-		subscribeToTournament,
-		subscribeToMatches,
-		subscribeToUserActivity,
-		cleanup,
-	};
-}
-
-// ============================================================================
-// 6. Tournament State persistence helpers (Consolidated from tournamentPersistence.ts)
+// 4. Tournament State persistence helpers (Consolidated from tournamentPersistence.ts)
 // ============================================================================
 
 export function createDefaultPersistentState(userName: string): PersistentTournamentState {
@@ -472,7 +218,7 @@ export function createNamesKey(names: NameItem[]): string {
 	return createSortedKey(names.map((n) => n?.id || ""));
 }
 
-export function createTournamentId(names: NameItem[], userName?: string): string {
+function createTournamentId(names: NameItem[], userName?: string): string {
 	const sortedIds = names
 		.map((n) => String(n.id))
 		.sort()
@@ -485,7 +231,7 @@ export function createTournamentId(names: NameItem[], userName?: string): string
 	return `tournament-${prefix}-${Math.abs(hash).toString(36)}-${names.length}`;
 }
 
-export function createBracketEntrants(participantIds: string[]): string[] {
+function createBracketEntrants(participantIds: string[]): string[] {
 	return shuffleArray(participantIds);
 }
 
@@ -511,7 +257,7 @@ function isValidTeamMatch(value: unknown): value is TeamMatch {
 	return typeof candidate.leftTeamId === "string" && typeof candidate.rightTeamId === "string";
 }
 
-export function sanitizePersistentState(
+function sanitizePersistentState(
 	persistentStateRaw: unknown,
 	userName: string,
 ): PersistentTournamentState {
@@ -556,7 +302,7 @@ export function sanitizePersistentState(
 // 7. Tournament State Reducer & Actions (Consolidated from tournamentReducer.ts)
 // ============================================================================
 
-export type TournamentAction =
+type TournamentAction =
 	| {
 			type: "INIT";
 			payload: {
@@ -589,14 +335,14 @@ export type TournamentAction =
 			};
 	  };
 
-export interface TournamentReducerState {
+interface TournamentReducerState {
 	ratings: Record<string, number>;
 	history: HistoryEntry[];
 	persistentState: PersistentTournamentState;
 	refreshKey: number;
 }
 
-export function tournamentReducer(
+function tournamentReducer(
 	state: TournamentReducerState,
 	action: TournamentAction,
 ): TournamentReducerState {
@@ -706,17 +452,11 @@ interface UseTournamentStateResult {
 	matchHistory: MatchRecord[];
 	bracketEntrants?: string[];
 	teams?: Team[];
-	subscribeToTournamentUpdates?: (
-		tournamentId: string,
-		callback: (update: TournamentUpdate) => void,
-	) => void;
-	subscribeToMatchResults?: (callback: (result: MatchResult) => void) => void;
-	subscribeToUserActivity?: (callback: (activity: UserActivity) => void) => void;
 }
 
 const VOTE_COOLDOWN = TIMING.VOTE_COOLDOWN_MS;
 
-export function haveSameIds(a: string[], b: string[]): boolean {
+function haveSameIds(a: string[], b: string[]): boolean {
 	if (a.length !== b.length) {
 		return false;
 	}
@@ -762,8 +502,6 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 
 	const namesKey = useMemo(() => createNamesKey(names), [names]);
 	const tournamentId = useMemo(() => createTournamentId(names, userName), [names, userName]);
-
-	const realtime = useTournamentRealtime({ autoConnect: true });
 
 	const defaultPersistentState = useMemo(
 		() => createDefaultPersistentState(userName || "anonymous"),
@@ -825,14 +563,6 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 			});
 		}
 	}, [state.persistentState, state.ratings, setPersistentState, tournamentActions]);
-
-	useEffect(() => {
-		return () => {
-			if (realtime && typeof realtime.cleanup === "function") {
-				realtime.cleanup();
-			}
-		};
-	}, [realtime]);
 
 	useEffect(() => {
 		ratingsRef.current = state.ratings;
@@ -1187,9 +917,6 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 		matchHistory: state.persistentState.matchHistory,
 		bracketEntrants: state.persistentState.bracketEntrants,
 		teams: state.persistentState.teams,
-		subscribeToTournamentUpdates: realtime.subscribeToTournament,
-		subscribeToMatchResults: realtime.subscribeToMatches,
-		subscribeToUserActivity: realtime.subscribeToUserActivity,
 	};
 }
 

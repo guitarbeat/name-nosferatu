@@ -205,5 +205,3 @@ export function Iridescence({
 
 	return <div ref={ctnDom} className={rootClass} style={style} {...rest} />;
 }
-
-export default Iridescence;

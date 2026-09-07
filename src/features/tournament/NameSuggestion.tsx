@@ -1,6 +1,6 @@
 import DOMPurify from "dompurify";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertCircle, CheckCircle2, Dices, Plus, Sparkles, Trophy, Zap } from "lucide-react";
+import { AlertCircle, CheckCircle2, Dices, Plus, Trophy, Zap } from "lucide-react";
 import {
 	type FormEvent,
 	type KeyboardEvent,
@@ -16,11 +16,11 @@ import { Button, CatImage, Input, Textarea } from "@/shared/components";
 import { CAT_IMAGES } from "@/shared/lib/constants";
 import { scaleFadeMotionPreset, statusMessageMotionPreset } from "@/shared/lib/uiUtils";
 
-export interface UseNameSuggestionProps {
+interface UseNameSuggestionProps {
 	onSuccess?: () => void;
 }
 
-export interface UseNameSuggestionResult {
+interface UseNameSuggestionResult {
 	values: { name: string; description: string };
 	errors: { name?: string; description?: string };
 	touched: { name?: boolean; description?: boolean };
@@ -128,7 +128,7 @@ export function useNameSuggestion(props: UseNameSuggestionProps = {}): UseNameSu
 	};
 }
 
-export interface NameSuggestionProps {
+interface NameSuggestionProps {
 	variant?: "inline" | "modal";
 	onClose?: () => void;
 }
@@ -140,7 +140,7 @@ interface InspirationArchetype {
 	names: Array<{ name: string; description: string }>;
 }
 
-export const INSPIRATION_ARCHETYPES: InspirationArchetype[] = [
+const INSPIRATION_ARCHETYPES: InspirationArchetype[] = [
 	{
 		id: "vampiric",
 		label: "Gothic / Vampire",
@@ -261,11 +261,7 @@ function getAvatarForName(nameStr: string): string {
 	return CAT_IMAGES[index] || CAT_IMAGES[0] || "";
 }
 
-export function ContenderCardPreview({
-	name,
-	description,
-	archetypeIcon = "🐾",
-}: CardPreviewProps) {
+function ContenderCardPreview({ name, description, archetypeIcon = "🐾" }: CardPreviewProps) {
 	const displayName = name.trim() || "Feline Contender";
 	const displayLore = description.trim() || "Backstory and tournament lore will appear here...";
 	const hasContent = Boolean(name.trim() || description.trim());
@@ -313,10 +309,10 @@ export function ContenderCardPreview({
 			</div>
 
 			<div className="mt-3.5 pt-3 border-t border-border/30 flex items-center justify-between text-[11px] text-muted-foreground">
-				<span className="flex items-center gap-1 font-medium">
-					<Sparkles size={12} className="text-primary" /> Ready for Bracket
+				<span className="flex items-center gap-1 font-medium text-foreground/80">
+					Ready for Bracket
 				</span>
-				<span className="text-foreground/70 font-semibold uppercase tracking-wider text-[10px]">
+				<span className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">
 					Matchup Eligible
 				</span>
 			</div>
@@ -328,7 +324,7 @@ export function ContenderCardPreview({
 // STATUS MESSAGE
 // ============================================================================
 
-export function StatusMessage({ error, success }: { error?: string; success?: string }) {
+function StatusMessage({ error, success }: { error?: string; success?: string }) {
 	return (
 		<AnimatePresence mode="wait">
 			{error && (
@@ -366,7 +362,7 @@ interface SuggestionSuccessViewProps {
 	onClose?: () => void;
 }
 
-export function SuggestionSuccessView({
+function SuggestionSuccessView({
 	submittedName,
 	submittedDescription,
 	onSuggestAnother,
@@ -430,12 +426,11 @@ interface ArchetypeBarProps {
 	disabled?: boolean;
 }
 
-export function ArchetypeBar({ onSelectIdea, onRandomize, disabled }: ArchetypeBarProps) {
+function ArchetypeBar({ onSelectIdea, onRandomize, disabled }: ArchetypeBarProps) {
 	return (
 		<div className="space-y-2">
 			<div className="flex items-center justify-between">
-				<span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-					<Sparkles size={12} className="text-primary" />
+				<span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
 					Quick Inspiration
 				</span>
 				<button
@@ -475,7 +470,7 @@ export function ArchetypeBar({ onSelectIdea, onRandomize, disabled }: ArchetypeB
 // INLINE INNER
 // ============================================================================
 
-export function NameSuggestionInner() {
+function NameSuggestionInner() {
 	const toast = useToast();
 	const [submittedPreview, setSubmittedPreview] = useState<{
 		name: string;
@@ -544,16 +539,12 @@ export function NameSuggestionInner() {
 			onSubmit={handleLocalSubmit}
 			className="w-full max-w-xl mx-auto rounded-2xl border border-border/50 bg-card/60 p-6 sm:p-8 backdrop-blur-xl shadow-lg space-y-6"
 		>
-			<div className="text-center space-y-2">
-				<div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider">
-					<Sparkles size={13} />
-					<span>Community Suggestions</span>
-				</div>
-				<h3 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
-					Have a suggestion?
+			<div className="text-center space-y-1.5">
+				<h3 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+					Suggest a Cat Name
 				</h3>
 				<p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-					Propose an iconic feline name to battle in head-to-head tournament matchups!
+					Propose a name to enter into head-to-head tournament matchups.
 				</p>
 			</div>
 
@@ -640,7 +631,7 @@ export function NameSuggestionInner() {
 // MODAL CONTENT
 // ============================================================================
 
-export function ModalNameSuggestionContent({ onClose }: { onClose: () => void }) {
+function ModalNameSuggestionContent({ onClose }: { onClose: () => void }) {
 	const toast = useToast();
 	const isMountedRef = useRef(true);
 	const nameInputRef = useRef<HTMLInputElement | null>(null);

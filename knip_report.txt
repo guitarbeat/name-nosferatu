@@ -1,0 +1,165 @@
+Unused exports (85)
+AppBootScreen                   function  src/app/App.tsx:47:17
+PwaInstallPrompt                function  src/app/App.tsx:86:17
+FloatingNavbar                  function  src/app/App.tsx:137:17
+AppLayout                       function  src/app/App.tsx:537:17
+localAuthAdapter                          src/app/Providers.tsx:18:14
+AuthProvider                    function  src/app/Providers.tsx:226:17
+ToastProvider                   function  src/app/Providers.tsx:461:17
+CHART_PALETTE                             src/features/dashboard/components/Charts.tsx:27:14
+CHART_SERIES                              src/features/dashboard/components/Charts.tsx:36:14
+CHART_TEXT_MUTED                          src/features/dashboard/components/Charts.tsx:45:14
+CHART_GRID                                src/features/dashboard/components/Charts.tsx:46:14
+CHART_AXIS                                src/features/dashboard/components/Charts.tsx:47:14
+CHART_FOREGROUND                          src/features/dashboard/components/Charts.tsx:48:14
+CHART_TOOLTIP_STYLE                       src/features/dashboard/components/Charts.tsx:50:14
+CHART_CURSOR                              src/features/dashboard/components/Charts.tsx:59:14
+COMMON_AXIS_PROPS                         src/features/dashboard/components/Charts.tsx:61:14
+truncateChartLabel              function  src/features/dashboard/components/Charts.tsx:67:17
+BUCKET_SIZE                               src/features/dashboard/components/Charts.tsx:71:14
+PopularNamingTrendsChart                  src/features/dashboard/components/Charts.tsx:76:14
+AnalyticsDashboard              function  src/features/dashboard/Dashboard.tsx:18:17
+ADMIN_TABS                                src/features/dashboard/utils.ts:61:14
+useStreakCalculator             function  src/features/tournament/hooks.ts:84:17
+useTournamentKeyboard           function  src/features/tournament/hooks.ts:139:17
+createDefaultPersistentState    function  src/features/tournament/hooks.ts:191:17
+buildInitialRatings             function  src/features/tournament/hooks.ts:209:17
+createNamesKey                  function  src/features/tournament/hooks.ts:217:17
+useNameSuggestion               function  src/features/tournament/NameSuggestion.tsx:38:17
+buildVisualContender            function  src/features/tournament/TournamentBracket.tsx:131:17
+MatchNodeCard                             src/features/tournament/TournamentBracket.tsx:647:14
+buildTeamMatches                function  src/features/tournament/tournamentEngine.ts:106:17
+applyTeamMatchElo               function  src/features/tournament/tournamentEngine.ts:121:17
+getMatchSideName                function  src/features/tournament/tournamentEngine.ts:317:17
+DEFAULT_CANDIDATE_NAMES                   src/shared/api.ts:31:14
+namesQueryKeys                            src/shared/api.ts:257:14
+fetchNames                      function  src/shared/api.ts:263:23
+softDeleteName                  function  src/shared/api.ts:276:23
+toggleNameHidden                function  src/shared/api.ts:282:23
+toggleNameLocked                function  src/shared/api.ts:306:23
+unhideAllNames                  function  src/shared/api.ts:328:23
+batchUpdateVisibility           function  src/shared/api.ts:340:23
+batchUpdateLocked               function  src/shared/api.ts:365:23
+ScrollMask                      function  src/shared/components/ScrollMask.tsx:80:17
+useNamesCache                   function  src/shared/hooks.ts:664:17
+openDatabase                    function  src/shared/lib/indexedDB.ts:46:17
+closeDatabase                   function  src/shared/lib/indexedDB.ts:115:17
+getAllRecordsFromDB             function  src/shared/lib/indexedDB.ts:251:23
+clearStoreInDB                  function  src/shared/lib/indexedDB.ts:286:23
+getAllStoredTournamentsFromIDB  function  src/shared/lib/indexedDB.ts:351:23
+mapNameRow                      function  src/shared/lib/names.ts:113:17
+isNameActive                    function  src/shared/lib/names.ts:192:17
+isStorageAvailable              function  src/shared/lib/storage.ts:177:17
+MOTION_SPRINGS                            src/shared/lib/uiUtils.ts:135:14
+getAccessibleTransition         function  src/shared/lib/uiUtils.ts:168:17
+getAccessibleVariants           function  src/shared/lib/uiUtils.ts:184:17
+slideUpMotionPreset                       src/shared/lib/uiUtils.ts:232:14
+slideDownMotionPreset                     src/shared/lib/uiUtils.ts:242:14
+modalBackdropMotionPreset                 src/shared/lib/uiUtils.ts:262:14
+modalDialogMotionPreset                   src/shared/lib/uiUtils.ts:272:14
+IS_BROWSER                                src/store/index.ts:40:14
+IS_DEV                                    src/store/index.ts:41:14
+patch                           function  src/store/index.ts:43:17
+createErrorSlice                          src/store/index.ts:135:14
+createTournamentSlice                     src/store/index.ts:257:14
+createUserAndSettingsSlice                src/store/index.ts:527:14
+useTournament                             src/store/index.ts:756:14
+useTournamentActions                      src/store/index.ts:757:14
+useTournamentIsComplete                   src/store/index.ts:758:14
+useTournamentNames                        src/store/index.ts:759:14
+useTournamentRatings                      src/store/index.ts:760:14
+useTournamentSelectedNames                src/store/index.ts:761:14
+useUser                                   src/store/index.ts:764:14
+useUserName                               src/store/index.ts:765:14
+useIsLoggedIn                             src/store/index.ts:766:14
+useIsAdmin                                src/store/index.ts:767:14
+useUserAvatar                             src/store/index.ts:768:14
+useUserActions                            src/store/index.ts:769:14
+useTheme                                  src/store/index.ts:771:14
+useThemePreference                        src/store/index.ts:772:14
+useIsBootLoading                          src/store/index.ts:773:14
+useUIActions                              src/store/index.ts:774:14
+useSiteSettings                           src/store/index.ts:776:14
+useCatChosenName                          src/store/index.ts:777:14
+useSiteSettingsActions                    src/store/index.ts:778:14
+useErrorState                             src/store/index.ts:780:14
+useErrorActions                           src/store/index.ts:781:14
+Unused exported types (78)
+UserRole                     type       src/app/Providers.tsx:79:13
+AuthUser                     interface  src/app/Providers.tsx:81:18
+LoginCredentials             interface  src/app/Providers.tsx:91:18
+RegisterData                 interface  src/app/Providers.tsx:97:18
+AuthAdapter                  interface  src/app/Providers.tsx:103:18
+AuthContextValue             interface  src/app/Providers.tsx:111:18
+ToastType                    type       src/app/Providers.tsx:231:13
+ToastOptions                 interface  src/app/Providers.tsx:233:18
+ToastItem                    interface  src/app/Providers.tsx:238:18
+ToastContextValue            interface  src/app/Providers.tsx:247:18
+ToastPosition                type       src/app/Providers.tsx:258:13
+DashboardView                type       src/features/dashboard/Dashboard.tsx:16:13
+UnifiedDashboardProps        interface  src/features/dashboard/Dashboard.tsx:109:18
+UnifiedDashboardProps        interface  src/features/dashboard/types.ts:38:18
+DashboardTab                 type       src/features/dashboard/types.ts:40:13
+BulkAction                   type       src/features/dashboard/types.ts:42:13
+DashboardView                type       src/features/dashboard/types.ts:64:13
+AdminNamesTabProps           interface  src/features/dashboard/types.ts:70:18
+UseNameSuggestionProps       interface  src/features/tournament/NameSuggestion.tsx:19:18
+UseNameSuggestionResult      interface  src/features/tournament/NameSuggestion.tsx:23:18
+NameSuggestionProps          interface  src/features/tournament/NameSuggestion.tsx:131:18
+VisualContender              interface  src/features/tournament/TournamentBracket.tsx:33:18
+VisualMatch                  interface  src/features/tournament/TournamentBracket.tsx:49:18
+VisualRound                  interface  src/features/tournament/TournamentBracket.tsx:67:18
+VisualBracketTree            interface  src/features/tournament/TournamentBracket.tsx:75:18
+TournamentBracketProps       interface  src/features/tournament/TournamentBracket.tsx:85:18
+TournamentBracketModalProps  interface  src/features/tournament/TournamentBracket.tsx:1565:18
+NormalizedParticipant        interface  src/features/tournament/tournamentEngine.ts:236:18
+MatchSideData                interface  src/features/tournament/tournamentEngine.ts:321:18
+TournamentMetrics            interface  src/features/tournament/tournamentEngine.ts:367:18
+BracketDerivation            interface  src/features/tournament/tournamentEngine.ts:379:18
+NamesDataSource              type       src/shared/api.ts:24:13
+NamesQueryResult             interface  src/shared/api.ts:26:18
+ToggleHiddenInput            interface  src/shared/api.ts:422:18
+ToggleLockedInput            interface  src/shared/api.ts:427:18
+DeleteNameInput              interface  src/shared/api.ts:432:18
+BatchUpdateVisibilityInput   interface  src/shared/api.ts:436:18
+BatchUpdateLockedInput       interface  src/shared/api.ts:441:18
+TournamentMatchRatingParams  interface  src/shared/api.ts:537:18
+DriftWallProps               interface  src/shared/components/DriftWall.tsx:24:18
+FluidGlassNavItem            interface  src/shared/components/FluidGlass.tsx:27:18
+LensProps                    interface  src/shared/components/FluidGlass.tsx:32:18
+BarProps                     interface  src/shared/components/FluidGlass.tsx:46:18
+CubeProps                    interface  src/shared/components/FluidGlass.tsx:61:18
+FluidGlassProps              interface  src/shared/components/FluidGlass.tsx:75:18
+GlassSurfaceProps            interface  src/shared/components/GlassSurface.tsx:11:18
+IridescenceProps             interface  src/shared/components/Iridescence.tsx:48:18
+ScrollMaskProps              interface  src/shared/components/ScrollMask.tsx:39:18
+StaggeredMenuSocialItem      interface  src/shared/components/StaggeredMenu.tsx:13:18
+StaggeredMenuProps           interface  src/shared/components/StaggeredMenu.tsx:20:18
+TextLoopShape                type       src/shared/components/TextLoop.tsx:11:13
+TextLoopDirection            type       src/shared/components/TextLoop.tsx:12:13
+TextLoopProps                interface  src/shared/components/TextLoop.tsx:14:18
+ProfileInnerProps            interface  src/shared/components/UIBlocks.tsx:21:18
+MagicToggleOption            interface  src/shared/components/UIBlocks.tsx:326:18
+MagicToggleProps             interface  src/shared/components/UIBlocks.tsx:332:18
+SearchFilterBarProps         interface  src/shared/components/UIBlocks.tsx:409:18
+IDBSyncStatus                type       src/shared/hooks.ts:227:13
+UseIndexedDBOptions          interface  src/shared/hooks.ts:229:18
+UseIndexedDBResult           interface  src/shared/hooks.ts:240:18
+UsePreloadImagesOptions      interface  src/shared/hooks.ts:727:18
+UsePreloadImagesResult       interface  src/shared/hooks.ts:734:18
+RatingStats                  interface  src/shared/lib/elo.ts:4:18
+EloConfig                    interface  src/shared/lib/elo.ts:33:18
+EloStats                     interface  src/shared/lib/elo.ts:43:18
+EloParticipantResult         interface  src/shared/lib/elo.ts:48:18
+EloPairResult                interface  src/shared/lib/elo.ts:55:18
+EloMatchResult               interface  src/shared/lib/elo.ts:66:18
+EloOutcome                   type       src/shared/lib/elo.ts:74:13
+StoredUserSnapshot           interface  src/shared/lib/storage.ts:306:18
+AppSet                       type       src/store/index.ts:37:13
+AppSliceCreator              type       src/store/index.ts:38:13
+TournamentActions            interface  src/store/index.ts:67:18
+UserActions                  interface  src/store/index.ts:90:18
+UIActions                    interface  src/store/index.ts:99:18
+SiteSettingsActions          interface  src/store/index.ts:105:18
+ErrorActions                 interface  src/store/index.ts:110:18
+AppState                     interface  src/store/index.ts:116:18

@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import type { ChangeEvent, ComponentType } from "react";
+import type { ComponentType } from "react";
 import type { NameItem, RatingData } from "@/shared/types";
 
 export interface LeaderboardEntry {
@@ -35,11 +35,7 @@ export interface DashboardProps {
 	onNameHidden?: (nameId: string) => void;
 }
 
-export interface UnifiedDashboardProps extends DashboardProps {}
-
-export type DashboardTab = "overview" | "names" | "users" | "analytics";
 export type NameFilter = "all" | "active" | "hidden" | "locked";
-export type BulkAction = "hide" | "unhide" | "lock" | "unlock";
 
 export interface AdminStats {
 	totalNames: number;
@@ -61,21 +57,6 @@ export interface SiteStatsLike {
 	totalRatings?: unknown;
 }
 
-export type DashboardView = "analytics" | "moderation";
-
 export interface AdminStatsGridProps {
 	stats: AdminStats;
-}
-
-export interface AdminNamesTabProps {
-	searchTerm: string;
-	onSearchTermChange: (value: string) => void;
-	filterStatus: string;
-	filterOptions: readonly { value: string; label: string }[];
-	onFilterChange: (event: ChangeEvent<HTMLSelectElement>) => void;
-	onRefresh: () => void;
-	filteredNames: NameWithStats[];
-	onToggleHidden: (nameId: string | number, isHidden: boolean) => void;
-	onToggleLocked: (nameId: string | number, isLocked: boolean) => void;
-	onDelete: (nameId: string | number) => void;
 }

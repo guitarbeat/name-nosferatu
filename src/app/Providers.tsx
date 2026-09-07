@@ -76,9 +76,9 @@ export function Providers({
 	);
 }
 
-export type UserRole = "user" | "moderator" | "admin";
+type UserRole = "user" | "moderator" | "admin";
 
-export interface AuthUser {
+interface AuthUser {
 	id: string;
 	name: string;
 	email?: string;
@@ -88,19 +88,19 @@ export interface AuthUser {
 	role?: UserRole;
 }
 
-export interface LoginCredentials {
+interface LoginCredentials {
 	email?: string;
 	password?: string;
 	name?: string;
 }
 
-export interface RegisterData {
+interface RegisterData {
 	email: string;
 	password: string;
 	name: string;
 }
 
-export interface AuthAdapter {
+interface AuthAdapter {
 	getCurrentUser: () => Promise<AuthUser | null>;
 	login: (credentials: LoginCredentials) => Promise<boolean>;
 	logout: () => Promise<void>;
@@ -108,7 +108,7 @@ export interface AuthAdapter {
 	checkAdminStatus: (userIdOrName: string) => Promise<boolean>;
 }
 
-export interface AuthContextValue {
+interface AuthContextValue {
 	user: AuthUser | null;
 	isLoading: boolean;
 	isAuthenticated: boolean;
@@ -228,14 +228,14 @@ export function AuthProvider({ children, adapter = localAuthAdapter }: AuthProvi
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export type ToastType = "success" | "error" | "info" | "warning";
+type ToastType = "success" | "error" | "info" | "warning";
 
-export interface ToastOptions {
+interface ToastOptions {
 	duration?: number;
 	autoDismiss?: boolean;
 }
 
-export interface ToastItem {
+interface ToastItem {
 	id: string;
 	message: string;
 	type: ToastType;
@@ -244,7 +244,7 @@ export interface ToastItem {
 	createdAt: number;
 }
 
-export interface ToastContextValue {
+interface ToastContextValue {
 	toasts: ToastItem[];
 	showToast: (message: string, type?: ToastType, options?: ToastOptions) => string;
 	hideToast: (id: string) => void;
@@ -255,7 +255,7 @@ export interface ToastContextValue {
 	showWarning: (message: string, options?: ToastOptions) => string;
 }
 
-export type ToastPosition =
+type ToastPosition =
 	| "top-left"
 	| "top-center"
 	| "top-right"

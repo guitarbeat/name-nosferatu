@@ -174,20 +174,6 @@ function decrypt(text: string): string {
 	}
 }
 
-export function isStorageAvailable(): boolean {
-	try {
-		if (typeof window === "undefined") {
-			return false;
-		}
-		const test = "__storage_test__";
-		window.localStorage.setItem(test, test);
-		window.localStorage.removeItem(test);
-		return true;
-	} catch {
-		return false;
-	}
-}
-
 export function getStorageString(key: string, fallback: string | null = null): string | null {
 	if (!isStorageAvailable()) {
 		const memVal = memoryFallbackStore.get(key);
@@ -497,4 +483,14 @@ export function clearStoredTournamentSnapshot(): void {
 	}
 
 	removeStorageItem(STORAGE_KEYS.TOURNAMENT);
+}
+function isStorageAvailable() {
+	try {
+		const key = "__storage_test__";
+		window.localStorage.setItem(key, key);
+		window.localStorage.removeItem(key);
+		return true;
+	} catch (_e) {
+		return false;
+	}
 }
