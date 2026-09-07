@@ -103,11 +103,20 @@ export function isNameLocked(name: NameItem | null | undefined): boolean {
 /**
  * Filters a list of names to only those that are not hidden.
  */
+// ⚡ Bolt Performance Optimization: Single-pass loop for name filtering
 export function getVisibleNames(names: NameItem[] | null | undefined): NameItem[] {
 	if (!Array.isArray(names)) {
 		return [];
 	}
-	return names.filter((name) => !isNameHidden(name));
+	const len = names.length;
+	const result: NameItem[] = [];
+	for (let i = 0; i < len; i++) {
+		const name = names[i];
+		if (!isNameHidden(name)) {
+			result.push(name);
+		}
+	}
+	return result;
 }
 
 /**
@@ -117,7 +126,15 @@ export function getActiveNames(names: NameItem[] | null | undefined): NameItem[]
 	if (!Array.isArray(names)) {
 		return [];
 	}
-	return names.filter(isNameActive);
+	const len = names.length;
+	const result: NameItem[] = [];
+	for (let i = 0; i < len; i++) {
+		const name = names[i];
+		if (isNameActive(name)) {
+			result.push(name);
+		}
+	}
+	return result;
 }
 
 /**
@@ -127,7 +144,15 @@ export function getHiddenNames(names: NameItem[] | null | undefined): NameItem[]
 	if (!Array.isArray(names)) {
 		return [];
 	}
-	return names.filter(isNameHidden);
+	const len = names.length;
+	const result: NameItem[] = [];
+	for (let i = 0; i < len; i++) {
+		const name = names[i];
+		if (isNameHidden(name)) {
+			result.push(name);
+		}
+	}
+	return result;
 }
 
 /**
@@ -137,7 +162,15 @@ export function getLockedNames(names: NameItem[] | null | undefined): NameItem[]
 	if (!Array.isArray(names)) {
 		return [];
 	}
-	return names.filter(isNameLocked);
+	const len = names.length;
+	const result: NameItem[] = [];
+	for (let i = 0; i < len; i++) {
+		const name = names[i];
+		if (isNameLocked(name)) {
+			result.push(name);
+		}
+	}
+	return result;
 }
 
 /**
