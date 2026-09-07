@@ -4,6 +4,11 @@ import {
 	deriveBracketState,
 	EloRating,
 	generateRandomTeams,
+	getFlameCount,
+	getHeatCardClasses,
+	getHeatGradientClasses,
+	getHeatLevel,
+	getHeatTextClasses,
 	resolveTournamentMode,
 } from "./tournamentEngine";
 
@@ -69,6 +74,75 @@ describe("tournamentEngine", () => {
 			expect(metrics.totalMatches).toBe(3);
 			expect(metrics.matchNumber).toBe(1);
 			expect(metrics.progress).toBe(0);
+		});
+	});
+
+	describe("Heat & Streak visual helpers", () => {
+		describe("getHeatLevel", () => {
+			it("returns correct heat level based on streak thresholds", () => {
+				expect(getHeatLevel(0)).toBeNull();
+				expect(getHeatLevel(2)).toBeNull();
+				expect(getHeatLevel(3)).toBe("warm");
+				expect(getHeatLevel(4)).toBe("warm");
+				expect(getHeatLevel(5)).toBe("hot");
+				expect(getHeatLevel(6)).toBe("hot");
+				expect(getHeatLevel(7)).toBe("blazing");
+				expect(getHeatLevel(10)).toBe("blazing");
+			});
+		});
+
+		describe("getHeatCardClasses", () => {
+			it("returns expected card classes for each heat level", () => {
+				expect(getHeatCardClasses("blazing")).toBe("ring-2 ring-orange-500/80 shadow-lg");
+				expect(getHeatCardClasses("hot")).toBe("ring-2 ring-amber-500/70 shadow-md");
+				expect(getHeatCardClasses("warm")).toBe("ring-1 ring-orange-400/50 shadow-sm");
+				expect(getHeatCardClasses(null)).toBe("");
+			});
+		});
+
+		describe("getHeatTextClasses", () => {
+			it("returns expected text classes for known heat levels", () => {
+				expect(getHeatTextClasses("blazing")).toBe(
+					"text-orange-200 border-orange-300/45 bg-orange-500/15",
+				);
+				expect(getHeatTextClasses("hot")).toBe(
+					"text-amber-200 border-amber-300/45 bg-amber-500/15",
+				);
+				expect(getHeatTextClasses("warm")).toBe(
+					"text-orange-100 border-orange-300/35 bg-orange-500/10",
+				);
+			});
+
+			it("returns default classes for invalid/unknown inputs", () => {
+				// @ts-expect-error - testing fallback for unexpected runtime value
+				expect(getHeatTextClasses("unknown")).toBe(
+					"text-orange-100 border-orange-300/35 bg-orange-500/10",
+				);
+			});
+		});
+
+		describe("getHeatGradientClasses", () => {
+			it("returns expected gradient classes for each heat level", () => {
+				expect(getHeatGradientClasses("blazing")).toBe(
+					"bg-gradient-to-t from-orange-500/45 via-amber-400/25 to-transparent",
+				);
+				expect(getHeatGradientClasses("hot")).toBe(
+					"bg-gradient-to-t from-orange-500/35 via-amber-300/20 to-transparent",
+				);
+				expect(getHeatGradientClasses("warm")).toBe(
+					"bg-gradient-to-t from-orange-500/20 via-amber-200/10 to-transparent",
+				);
+			});
+		});
+
+		describe("getFlameCount", () => {
+			it("calculates flame count correctly within bounds", () => {
+				expect(getFlameCount(0)).toBe(3);
+				expect(getFlameCount(3)).toBe(4);
+				expect(getFlameCount(5)).toBe(6);
+				expect(getFlameCount(10)).toBe(8);
+				expect(getFlameCount(5, 5)).toBe(5);
+			});
 		});
 	});
 });
