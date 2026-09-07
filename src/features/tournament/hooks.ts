@@ -12,7 +12,7 @@ import { useToast } from "@/app/Providers";
 import { addName, ratingsAPI } from "@/shared/api";
 import { useIndexedDB, useLocalStorage, useTournamentIndexedDB } from "@/shared/hooks";
 import { ELO_RATING, TIMING } from "@/shared/lib/constants";
-import { createSortedKey, shuffleArray } from "@/shared/lib/utils";
+import { createSortedKey, ErrorManager, shuffleArray } from "@/shared/lib/utils";
 
 import type {
 	Match,
@@ -1073,7 +1073,7 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 					winnerSide,
 				})
 				.catch((err: unknown) => {
-					console.warn("[tournament] apply_tournament_match_elo failed (non-fatal):", err);
+					ErrorManager.handleError(err, "useTournamentState.applyTournamentMatch");
 				});
 
 			dispatch({
