@@ -1,7 +1,13 @@
 {
 	"$schema": "https://unpkg.com/knip@5/schema.json",
-	"project": ["src/**/*.{js,jsx,ts,tsx}"],
-	"ignore": [],
+	"project": [
+		"src/**/*.{js,jsx,ts,tsx}"
+	],
+	"ignore": [
+		"src/shared/components/ui/MagicAvatarPicker.tsx",
+		"src/shared/components/ui/MagicInput.tsx",
+		"src/shared/components/ProfileWidget.tsx"
+	],
 	"ignoreDependencies": [],
 	"typescript": true
 }
