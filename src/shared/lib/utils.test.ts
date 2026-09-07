@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { logger } from "./storage";
 import {
 	addManyToSet,
 	addToSet,
@@ -13,6 +14,30 @@ import {
 } from "./utils";
 
 describe("shared utils", () => {
+	describe("logger", () => {
+		it("logs error, warn, info, debug in dev mode", () => {
+			const spyError = vi.spyOn(console, "error").mockImplementation(() => {});
+			const spyWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+			const spyLog = vi.spyOn(console, "log").mockImplementation(() => {});
+			const spyDebug = vi.spyOn(console, "debug").mockImplementation(() => {});
+
+			logger.error("test error", { details: 123 });
+			logger.warn("test warn");
+			logger.info("test info");
+			logger.debug("test debug");
+
+			expect(spyError).toHaveBeenCalledWith("test error", { details: 123 });
+			expect(spyWarn).toHaveBeenCalledWith("test warn");
+			expect(spyLog).toHaveBeenCalledWith("test info");
+			expect(spyDebug).toHaveBeenCalledWith("test debug");
+
+			spyError.mockRestore();
+			spyWarn.mockRestore();
+			spyLog.mockRestore();
+			spyDebug.mockRestore();
+		});
+	});
+
 	describe("cn", () => {
 		it("merges class names and handles conditionals", () => {
 			expect(cn("bg-red-500", true && "text-white", false && "hidden")).toBe(

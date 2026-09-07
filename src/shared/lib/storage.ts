@@ -12,6 +12,29 @@ import type {
 
 const isDev = () => import.meta.env?.DEV ?? false;
 
+export const logger = {
+	error(message: string, ...args: unknown[]): void {
+		if (isDev()) {
+			console.error(message, ...args);
+		}
+	},
+	warn(message: string, ...args: unknown[]): void {
+		if (isDev()) {
+			console.warn(message, ...args);
+		}
+	},
+	info(message: string, ...args: unknown[]): void {
+		if (isDev()) {
+			console.log(message, ...args);
+		}
+	},
+	debug(message: string, ...args: unknown[]): void {
+		if (isDev()) {
+			console.debug(message, ...args);
+		}
+	},
+};
+
 // Secret key used to encrypt storage values.
 // In a real application, this should ideally be derived from a user-specific value or backend secret.
 // For client-side storage where the goal is simply to prevent clear-text storage on disk, a static key provides basic obfuscation.
@@ -202,9 +225,7 @@ export function getStorageString(key: string, fallback: string | null = null): s
 		}
 		return decrypt(value);
 	} catch (error) {
-		if (isDev()) {
-			console.error(`[storage] Failed to read key "${key}" from localStorage:`, error);
-		}
+		logger.error(`[storage] Failed to read key "${key}" from localStorage:`, error);
 		const memVal = memoryFallbackStore.get(key);
 		return memVal === undefined ? fallback : decrypt(memVal);
 	}
@@ -239,9 +260,7 @@ export function setStorageString(key: string, value: string): boolean {
 		memoryFallbackStore.set(key, encryptedValue);
 		return true;
 	} catch (error) {
-		if (isDev()) {
-			console.error(`[storage] Failed to write key "${key}":`, error);
-		}
+		logger.error(`[storage] Failed to write key "${key}":`, error);
 		return false;
 	}
 }
@@ -255,9 +274,7 @@ export function removeStorageItem(key: string): void {
 	try {
 		window.localStorage.removeItem(key);
 	} catch (error) {
-		if (isDev()) {
-			console.error(`[storage] Failed to remove key "${key}" from localStorage:`, error);
-		}
+		logger.error(`[storage] Failed to remove key "${key}" from localStorage:`, error);
 	}
 }
 
@@ -269,9 +286,7 @@ export function parseJsonValue<T>(value: string | null, fallback: T): T {
 	try {
 		return JSON.parse(value) as T;
 	} catch (error) {
-		if (isDev()) {
-			console.error("[storage] Failed to parse JSON from localStorage:", error);
-		}
+		logger.error("[storage] Failed to parse JSON from localStorage:", error);
 		return fallback;
 	}
 }
@@ -284,9 +299,7 @@ export function writeStorageJson<T>(key: string, value: T): boolean {
 	try {
 		return setStorageString(key, JSON.stringify(value));
 	} catch (error) {
-		if (isDev()) {
-			console.error(`[storage] Failed to write key "${key}" to localStorage:`, error);
-		}
+		logger.error(`[storage] Failed to write key "${key}" to localStorage:`, error);
 		return false;
 	}
 }
