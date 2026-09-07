@@ -1,20 +1,13 @@
 import { max, mean, medianSorted, min, standardDeviation } from "simple-statistics";
 import { ELO_RATING } from "./constants";
 
-export interface RatingStats {
+interface RatingStats {
 	mean: number;
 	median: number;
 	stdDev: number;
 	min: number;
 	max: number;
 	count: number;
-}
-
-export interface EnrichedRating {
-	rating: number;
-	percentileRank: number;
-	confidence: number;
-	zScore: number;
 }
 
 export function computeRatingStats(ratings: number[]): RatingStats | null {
@@ -37,61 +30,7 @@ export function computeRatingStats(ratings: number[]): RatingStats | null {
 	};
 }
 
-export function getPercentileRank(rating: number, allRatings: number[]): number {
-	if (!Array.isArray(allRatings) || allRatings.length === 0) {
-		return 50;
-	}
-	let belowCount = 0;
-	let validCount = 0;
-	const len = allRatings.length;
-	for (let i = 0; i < len; i++) {
-		const val = allRatings[i];
-		if (typeof val === "number" && Number.isFinite(val)) {
-			validCount++;
-			if (val < rating) {
-				belowCount++;
-			}
-		}
-	}
-	if (validCount <= 1) {
-		return 100;
-	}
-	return Math.round((belowCount / (validCount - 1)) * 100);
-}
-
-export function getConfidenceScore(gamesPlayed: number, threshold = 15): number {
-	if (!Number.isFinite(gamesPlayed) || gamesPlayed <= 0) {
-		return 0;
-	}
-	if (gamesPlayed >= threshold) {
-		return 1;
-	}
-	return Math.min(1, Math.max(0, gamesPlayed / threshold));
-}
-
-export function getZScore(rating: number, stats: RatingStats): number {
-	if (!stats || !Number.isFinite(stats.stdDev) || stats.stdDev <= 0) {
-		return 0;
-	}
-	const z = (rating - stats.mean) / stats.stdDev;
-	return Number.isFinite(z) ? Math.round(z * 100) / 100 : 0;
-}
-
-export function enrichRating(
-	rating: number,
-	gamesPlayed: number,
-	allRatings: number[],
-	stats: RatingStats | null,
-): EnrichedRating {
-	return {
-		rating,
-		percentileRank: getPercentileRank(rating, allRatings),
-		confidence: getConfidenceScore(gamesPlayed),
-		zScore: stats ? getZScore(rating, stats) : 0,
-	};
-}
-
-export interface EloConfig {
+interface EloConfig {
 	defaultRating?: number;
 	kFactor?: number;
 	minRating?: number;
@@ -101,19 +40,19 @@ export interface EloConfig {
 	newPlayerKMultiplier?: number;
 }
 
-export interface EloStats {
+interface EloStats {
 	wins?: number;
 	losses?: number;
 }
 
-export interface EloParticipantResult {
+interface EloParticipantResult {
 	rating: number;
 	wins: number;
 	losses: number;
 	delta: number;
 }
 
-export interface EloPairResult {
+interface EloPairResult {
 	newRatingA: number;
 	newRatingB: number;
 	winsA: number;
@@ -124,7 +63,7 @@ export interface EloPairResult {
 	expectedScoreB: number;
 }
 
-export interface EloMatchResult {
+interface EloMatchResult {
 	ratings: Record<string, number>;
 	stats: Record<string, { wins: number; losses: number }>;
 	participants: Record<string, EloParticipantResult>;
@@ -132,7 +71,7 @@ export interface EloMatchResult {
 	rightAverageRating: number;
 }
 
-export type EloOutcome = "left" | "right" | "tie";
+type EloOutcome = "left" | "right" | "tie";
 
 const DEFAULT_ELO_CONFIG: Required<EloConfig> = {
 	defaultRating: ELO_RATING.DEFAULT_RATING,

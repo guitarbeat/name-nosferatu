@@ -5,7 +5,6 @@ import {
 	decryptValue,
 	getStorageString,
 	parseJsonValue,
-	readStorageJson,
 	removeStorageItem,
 	type StoredTournamentSnapshot,
 	writeStorageJson,
@@ -224,9 +223,9 @@ export function useLocalStorage<T>(
 // 3. useIndexedDB & useTournamentIndexedDB (Offline-first persistence)
 // ============================================================================
 
-export type IDBSyncStatus = "idle" | "loading" | "saving" | "synced" | "error";
+type IDBSyncStatus = "idle" | "loading" | "saving" | "synced" | "error";
 
-export interface UseIndexedDBOptions<T> {
+interface UseIndexedDBOptions<T> {
 	dbName?: string;
 	storeName?: string;
 	key?: IDBValidKey;
@@ -237,7 +236,7 @@ export interface UseIndexedDBOptions<T> {
 	onError?: (error: Error) => void;
 }
 
-export interface UseIndexedDBResult<T> {
+interface UseIndexedDBResult<T> {
 	data: T | null;
 	isLoading: boolean;
 	isReady: boolean;
@@ -511,11 +510,27 @@ export function useSectionScroll() {
 		(id: string) => {
 			clearPendingScroll();
 			pendingScrollRef.current = window.setTimeout(() => {
-				const element = document.getElementById(id);
-				element?.scrollIntoView?.({
-					behavior: prefersReducedMotion ? "auto" : "smooth",
-					block: "start",
-				});
+				const targetId =
+					id === "stats" || id === "stats-section" || id === "results"
+						? "analysis"
+						: id === "pick-names-section" ||
+								id === "tournament" ||
+								id === "tournament-section" ||
+								id === "contenders"
+							? "pick"
+							: id;
+				const element = document.getElementById(targetId) || document.getElementById(id);
+				if (element) {
+					element.scrollIntoView?.({
+						behavior: prefersReducedMotion ? "auto" : "smooth",
+						block: "start",
+					});
+				} else if (id === "landing" || id === "top") {
+					window.scrollTo({
+						top: 0,
+						behavior: prefersReducedMotion ? "auto" : "smooth",
+					});
+				}
 				pendingScrollRef.current = null;
 			}, 10);
 		},
@@ -630,14 +645,14 @@ interface CacheEntry {
 	timestamp: number;
 }
 
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-const CACHE_KEY = "names_cache_v2";
+const _CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const _CACHE_KEY = "names_cache_v2";
 
 function isNameItemArray(value: unknown): value is NameItem[] {
 	return Array.isArray(value);
 }
 
-function isCacheEntry(value: unknown): value is CacheEntry {
+function _isCacheEntry(value: unknown): value is CacheEntry {
 	if (!value || typeof value !== "object") {
 		return false;
 	}
@@ -645,77 +660,18 @@ function isCacheEntry(value: unknown): value is CacheEntry {
 	return typeof candidate.timestamp === "number" && isNameItemArray(candidate.data);
 }
 
-export function useNamesCache() {
-	const cacheRef = useRef<Map<string, CacheEntry>>(new Map());
-
-	const getCachedData = useCallback((includeHidden: boolean): NameItem[] | null => {
-		const key = `${CACHE_KEY}_${includeHidden}`;
-		const entry = cacheRef.current.get(key);
-
-		if (!entry) {
-			return null;
-		}
-
-		const now = Date.now();
-		if (now - entry.timestamp > CACHE_TTL) {
-			cacheRef.current.delete(key);
-			return null;
-		}
-
-		return entry.data;
-	}, []);
-
-	const setCachedData = useCallback((data: NameItem[], includeHidden: boolean): void => {
-		const key = `${CACHE_KEY}_${includeHidden}`;
-		cacheRef.current.set(key, {
-			data,
-			timestamp: Date.now(),
-		});
-
-		// Persist to localStorage after updating cache
-		const cacheObject = Object.fromEntries(cacheRef.current);
-		writeStorageJson("names_cache_map", cacheObject);
-	}, []);
-
-	const invalidateCache = useCallback((): void => {
-		cacheRef.current.clear();
-	}, []);
-
-	// Load cache from localStorage on mount
-	useEffect(() => {
-		const stored = readStorageJson("names_cache_map", {});
-
-		if (!stored || typeof stored !== "object") {
-			return;
-		}
-
-		const now = Date.now();
-		for (const [key, entry] of Object.entries(stored as Record<string, unknown>)) {
-			if (isCacheEntry(entry) && now - entry.timestamp <= CACHE_TTL) {
-				cacheRef.current.set(key, entry);
-			}
-		}
-	}, []);
-
-	return {
-		getCachedData,
-		setCachedData,
-		invalidateCache,
-	};
-}
-
 // ============================================================================
 // 6. usePreloadImages (Critical Shell Image Preloader)
 // ============================================================================
 
-export interface UsePreloadImagesOptions {
+interface UsePreloadImagesOptions {
 	enabled?: boolean;
 	crossOrigin?: "anonymous" | "use-credentials";
 	onComplete?: (loadedUrls: string[], failedUrls: string[]) => void;
 	onError?: (failedUrl: string) => void;
 }
 
-export interface UsePreloadImagesResult {
+interface UsePreloadImagesResult {
 	isLoading: boolean;
 	isLoaded: boolean;
 	progress: number; // 0.0 to 1.0

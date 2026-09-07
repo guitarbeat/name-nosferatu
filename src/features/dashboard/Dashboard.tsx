@@ -1,6 +1,6 @@
 import { BarChart3, Settings, Trophy } from "lucide-react";
 import { memo, useMemo, useState } from "react";
-import { MagicToggle } from "@/components/ui/MagicToggle";
+import { MagicToggle } from "@/shared/components/UIBlocks";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { ContextBadge, Panel, SectionHeader } from "./components/Common";
 import {
@@ -14,7 +14,7 @@ import { PersonalResults } from "./components/PersonalResults";
 import { useDashboardData } from "./hooks";
 import type { DashboardProps } from "./types";
 
-export type DashboardView = "analytics" | "admin";
+type DashboardView = "analytics" | "admin";
 
 // ⚡ Bolt Performance Optimization: Wrapped AnalyticsDashboard in React.memo()
 export const AnalyticsDashboard = memo(function AnalyticsDashboard({
@@ -108,7 +108,7 @@ const DASHBOARD_VIEW_OPTIONS = [
 	},
 ];
 
-export interface UnifiedDashboardProps extends DashboardProps {
+interface UnifiedDashboardProps extends DashboardProps {
 	isAdmin?: boolean;
 }
 
