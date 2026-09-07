@@ -2,12 +2,12 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Award, Flame, LogOut, Pencil, Shield, Trophy, User } from "lucide-react";
 import type { RefObject } from "react";
 import { useEffect, useRef, useState } from "react";
-import { MagicAvatarPicker } from "@/components/ui/MagicAvatarPicker";
-import { MagicInput } from "@/components/ui/MagicInput";
 import { Button } from "@/shared/components/LayoutBlocks";
 import { CAT_IMAGES, FALLBACK_CAT_IMAGE } from "@/shared/lib/constants";
 import { ErrorManager } from "@/shared/lib/utils";
 import useAppStore from "@/store";
+import { MagicAvatarPicker } from "./MagicAvatarPicker";
+import { MagicInput } from "./MagicInput";
 
 export interface MagicProfileWidgetProps {
 	avatarSrc: string;
