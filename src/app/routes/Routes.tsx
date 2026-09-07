@@ -1,17 +1,25 @@
 import { RotateCcw, Trophy } from "lucide-react";
 import { Suspense, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/app";
 import { Dashboard as DashboardLazy } from "@/features/dashboard/Dashboard";
 import { TournamentSetup } from "@/features/tournament/TournamentSetup";
-import { Button, ErrorBoundary, Loading } from "@/shared/components/LayoutBlocks";
+import { Section } from "@/shared/components";
+import {
+	Button,
+	ErrorBoundary,
+	Loading,
+} from "@/shared/components/LayoutBlocks";
 import { SectionHeading } from "@/shared/components/UIBlocks";
 import { useSectionScroll } from "@/shared/hooks";
 import useAppStore, { errorContexts } from "@/store";
 
-export default function HomeRoute() {
+export function HomeRoute() {
 	const user = useAppStore((s) => s.user);
 	const tournament = useAppStore((s) => s.tournament);
 	const tournamentActions = useAppStore((s) => s.tournamentActions);
-	const { scrollToSection, scheduleSectionScroll, clearPendingScroll } = useSectionScroll();
+	const { scrollToSection, scheduleSectionScroll, clearPendingScroll } =
+		useSectionScroll();
 
 	useEffect(() => {
 		const handleTabChange = (e: Event) => {
@@ -53,7 +61,9 @@ export default function HomeRoute() {
 									<Trophy size={18} />
 								</div>
 								<div>
-									<h4 className="text-sm font-semibold text-foreground">Tournament in Progress</h4>
+									<h4 className="text-sm font-semibold text-foreground">
+										Tournament in Progress
+									</h4>
 									<p className="text-xs text-muted-foreground">
 										{tournament.names?.length} contenders seeded
 									</p>
@@ -110,5 +120,58 @@ export default function HomeRoute() {
 				</section>
 			</div>
 		</div>
+	);
+}
+
+function AdminLoading() {
+	return (
+		<div className="fixed inset-0 flex items-center justify-center bg-background">
+			<Loading variant="skeleton" height={600} />
+		</div>
+	);
+}
+
+function AccessDenied() {
+	const navigate = useNavigate();
+	return (
+		<Section id="admin" maxWidth="md">
+			<div className="flex flex-col items-center gap-4 py-10 text-center">
+				<h2 className="text-3xl font-bold text-destructive">Access Denied</h2>
+				<p className="max-w-md text-muted-foreground">
+					Admin access is required to view this page. Head back home to log in
+					or return to the main tournament flow.
+				</p>
+				<Button variant="outline" onClick={() => navigate("/")}>
+					Back Home
+				</Button>
+			</div>
+		</Section>
+	);
+}
+
+export function AdminRoute() {
+	const { user: authUser, isLoading: authLoading } = useAuth();
+
+	if (authLoading) {
+		return <AdminLoading />;
+	}
+
+	if (!authUser?.isAdmin) {
+		return <AccessDenied />;
+	}
+
+	return (
+		<Section id="admin">
+			<Suspense fallback={<Loading variant="skeleton" height={600} />}>
+				<ErrorBoundary context={errorContexts.analysisDashboard}>
+					<DashboardLazy
+						isAdmin={authUser?.isAdmin}
+						userName={authUser?.name}
+						isLoggedIn={authUser?.isLoggedIn}
+						avatarUrl={authUser?.avatarUrl}
+					/>
+				</ErrorBoundary>
+			</Suspense>
+		</Section>
 	);
 }

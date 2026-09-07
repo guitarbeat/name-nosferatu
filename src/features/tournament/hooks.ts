@@ -7,7 +7,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useToast } from "@/app/Providers";
+import { useToast } from "@/app";
 import { ratingsAPI } from "@/shared/api";
 import { useIndexedDB, useLocalStorage, useTournamentIndexedDB } from "@/shared/hooks";
 import { ELO_RATING, TIMING } from "@/shared/lib/constants";

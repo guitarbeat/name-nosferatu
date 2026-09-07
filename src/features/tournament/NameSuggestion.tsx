@@ -10,7 +10,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useToast } from "@/app/Providers";
+import { useToast } from "@/app";
 import { addName } from "@/shared/api";
 import { Button, CatImage, Input, Textarea } from "@/shared/components";
 import { CAT_IMAGES } from "@/shared/lib/constants";

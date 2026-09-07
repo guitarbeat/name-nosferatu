@@ -1,7 +1,7 @@
 import { BarChart3, Settings, Trophy } from "lucide-react";
 import { memo, useMemo, useState } from "react";
-import { AdminDashboard } from "./components/AdminDashboard";
-import { ContextBadge, Panel, SectionHeader } from "./components/Common";
+import { AdminDashboard } from "./components";
+import { ContextBadge, Panel, SectionHeader } from "./components";
 import { MagicToggle } from "@/shared/components";
 import {
 	CommunityChartsPanel,
@@ -9,8 +9,8 @@ import {
 	EngagementPanel,
 	getQuickStats,
 	LeaderboardPanel,
-} from "./components/DashboardPanels";
-import { PersonalResults } from "./components/PersonalResults";
+} from "./components";
+import { PersonalResults } from "./components";
 import { useDashboardData } from "./hooks";
 import type { DashboardProps } from "./types";
 
